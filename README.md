@@ -11,8 +11,11 @@ To analyze the images we will mostly be utilizing convolutional neural networks 
 
 
 ## References for us:
+
 https://ieeexplore.ieee.org/document/8320684 - image processing
+
 https://blog.paperspace.com/image-classification-with-attention/ - attention intro
+
 https://www2.cs.sfu.ca/~hamarneh/ecopy/ipmi2019.pdf - melanoma with visual attention
 
 
@@ -26,7 +29,7 @@ Madeline: Intro/background, Gantt chart
 
 Cameron: Found dataset, wrote sentences, Setup Slidedeck
 
-John: CreatedGitHub pages, Results and Discussion
+John: Created GitHub pages, Results and Discussion
 
 Aki: Methods paper and slide
 
