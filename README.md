@@ -27,6 +27,8 @@ There are many potential ways to quantify the data, and there is likely no singl
 
 ![Contribution Table](assets/Contribution_Table.png)
 
+
+## Gantt Chart
 ![Gantt Chart](assets/Gantt_Chart.png)
 
 
