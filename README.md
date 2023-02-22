@@ -25,9 +25,9 @@ There are many potential ways to quantify the data, and there is likely no singl
 
 ## Contribution Table:
 
-[](assets/Contribution_Table.png)
+![Contribution Table](assets/Contribution_Table.png)
 
-[](assets/Gantt_Chart.png)
+![Gantt Chart](assets/Gantt_Chart.png)
 
 
 
