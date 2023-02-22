@@ -12,11 +12,11 @@ To analyze the images we will mostly be utilizing convolutional neural networks 
 
 ## References for us:
 
-[image processing](https://ieeexplore.ieee.org/document/8320684)
+[Image Processing](https://ieeexplore.ieee.org/document/8320684)
 
-[attention intro](https://blog.paperspace.com/image-classification-with-attention/)
+[Attention Intro](https://blog.paperspace.com/image-classification-with-attention/)
 
-[melanoma with visual attention](https://www2.cs.sfu.ca/~hamarneh/ecopy/ipmi2019.pdf) 
+[Melanoma with Visual Attention](https://www2.cs.sfu.ca/~hamarneh/ecopy/ipmi2019.pdf) 
 
 
 ## Results and Discussion:
