@@ -25,15 +25,11 @@ There are many potential ways to quantify the data, and there is likely no singl
 
 ## Contribution Table:
 
-Madeline: Intro/background, Gantt chart
+![Contribution Table](assets/Contribution_Table.png)
 
-Cameron: Found dataset, wrote sentences, Setup Slidedeck
 
-John: Created GitHub pages, Results and Discussion
-
-Aki: Methods paper and slide
-
-Brady: Methods, Proposal Recording, Proposal Proofing
+## Gantt Chart
+![Gantt Chart](assets/Gantt_Chart.png)
 
 
 
