@@ -21,7 +21,7 @@ To analyze the images we will mostly be utilizing convolutional neural networks 
 
 ## Results and Discussion:
 
-There are many potential ways to quantify the data, and there is likely no single best fit. We will start by using a simple accuracy metric, which should provide a baseline level of information regarding the success of our system. We will refine our success metrics as time goes on.
+There are many potential ways to quantify the data, and there is likely no single best fit. We will start by using a simple combination of accuracy, precision, and recall metrics, which should provide a baseline level of information regarding the success of our system. We will refine our success metrics as time goes on.
 
 ## Contribution Table:
 
