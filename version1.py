@@ -59,7 +59,7 @@ for folder in os.listdir(data_path)[1:]:
         image = torchvision.io.read_image(file_path)
         x_train.append(image)
         y_train.append(folder)
-x_train = torch.stack(x_train, 0)
+x_train = torch.stack(x_train, 0) / 256
 y_train = torch.tensor([label_to_int[y] for y in y_train])
 y_train_onehot = torch.scatter(torch.zeros(y_train.shape[0], NUM_CLASS), 1, y_train.unsqueeze(1), torch.ones(y_train.shape[0], 1))
 
@@ -73,7 +73,7 @@ for folder in os.listdir(data_path)[1:]:
         image = torchvision.io.read_image(file_path)
         x_test.append(image)
         y_test.append(folder)
-x_test = torch.stack(x_test, 0)
+x_test = torch.stack(x_test, 0) / 256
 y_test = torch.tensor([label_to_int[y] for y in y_test])
 y_test_onehot = torch.scatter(torch.zeros(y_test.shape[0], NUM_CLASS), 1, y_test.unsqueeze(1), torch.ones(y_test.shape[0], 1))
 
@@ -117,7 +117,11 @@ start_time = time.time()
 for epoch in range(1, MAX_STEPS + 1):
     loss_train = []
     accuracy_train = []
-    # TODO: shuffe data and break into batches (x and y) -> DataLoader?
+    shuffle = torch.randperm(TEST_SIZE)
+    x_train_shuffled = x_train[shuffle]
+    y_train = y_train[shuffle]
+    y_train_onehot = y_train_onehot[shuffle]
+    # TODO: break into batches (x and y) -> DataLoader would be able to batch and shuffle
     for _ in range(TRAIN_SIZE // BATCH_SIZE):
         logits = model(x_train)
         loss = calc_loss(logits, y_train_onehot)
