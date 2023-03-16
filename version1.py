@@ -8,14 +8,13 @@ import torchvision
 from torchvision.io import read_image
 import csv
 
-class Net(nn.Module):
-    
+class Net(nn.Module): # TODO
     def __init__(self, dim, dim_embed, bias=True):
         super(Net, self).__init__()
-        self.conv = nn.Conv3d(dim, dim_embed, 3, bias=bias)
+        self.conv = nn.Conv2d(dim, dim_embed, 3, bias=bias)
 
     def forward(self, x):
-        return self.conv(x) # TODO -> result should be shape [BATCH_SIZE, NUM_CLASS] of logits
+        return self.conv(x) # shape [BATCH_SIZE, NUM_CLASS]
     
 def calc_loss(logits, y):
     loss_func = nn.CrossEntropyLoss() # TODO: look into weights parameter
@@ -27,7 +26,25 @@ def calc_accuracy(logits, y):
     accuracy = (y_hat == y).sum() / y.shape[0]
     return accuracy # shape [BATCH_SIZE]
 
-### READ FILES
+### SET PARAMETERS
+
+# HYPERPARAMETERS
+SEED            = 0
+BATCH_SIZE      = 16
+LEARNING_RATE   = 0.01
+MAX_GRAD_NORM   = 2
+MAX_STEPS       = 1000
+LOG_INTERVAL    = 20 # doesn't affect learning
+
+# MODEL PARAMETERS
+DIM_EMBED       = 16
+KERNEL_SIZE     = 3
+
+# LOAD CHECKPOINT INFORMATION
+CP_TIME         = ''
+CP_STEP         = 0
+
+### READ DATA
 NUM_CLASS  = 4
 
 label_to_int = {'NonDemented': 0, 'VeryMildDemented': 1, 'MildDemented': 2, 'ModerateDemented': 3}
@@ -62,31 +79,13 @@ y_test_onehot = torch.scatter(torch.zeros(y_test.shape[0], NUM_CLASS), 1, y_test
 
 TRAIN_SIZE = x_train.shape[0]
 TEST_SIZE  = x_test.shape[0]
+NUM_CHANS  = x_train.shape[1]
 NUM_ROWS   = x_train.shape[2]
 NUM_COLS   = x_train.shape[3]
-NUM_CHANS  = x_train.shape[1]
-
-### SET PARAMETERS
-
-# HYPERPARAMETERS
-SEED            = 0
-BATCH_SIZE      = 16
-LEARNING_RATE   = 0.01
-MAX_GRAD_NORM   = 2
-MAX_STEPS       = 1000
-LOG_INTERVAL    = 20 # doesn't affect learning
-
-# MODEL PARAMETERS
-DIM_EMBED       = 16
-KERNEL_SIZE     = 3
-
-# LOAD CHECKPOINT INFORMATION
-CP_TIME         = ''
-CP_STEP         = 0
 
 ### INITIALIZE MODEL
 model = Net(NUM_CHANS, DIM_EMBED, KERNEL_SIZE)
-optimizer = Adam(model.parameters(), lr=LEARNING_RATE)
+optimizer = Adam(model.parameerters(), lr=LEARNING_RATE)
 
 ### INITIALIZE SAVE DIRECTORY
 characteristics = '{}'.format(KERNEL_SIZE)
@@ -108,7 +107,7 @@ else:
 log_name = '{}.csv'.format(characteristics)
 log_path = os.path.join(save_dir, log_name)
 with open(log_path, 'w', newline='') as f:
-    header = ['Step', 'Mean_train_loss', 'train_accuracy', 'Mean_test_loss', 'test_accuracy']
+    header = ['Step', 'Mean_train_loss', 'Train_accuracy', 'Mean_test_loss', 'Test_accuracy']
     writer = csv.writer(f)
     writer.writerow(header)
 
@@ -118,7 +117,7 @@ start_time = time.time()
 for epoch in range(1, MAX_STEPS + 1):
     loss_train = []
     accuracy_train = []
-    #TODO: break training into batches (x and y) -> DataLoader?
+    # TODO: shuffe data and break into batches (x and y) -> DataLoader?
     for _ in range(TRAIN_SIZE // BATCH_SIZE):
         logits = model(x_train)
         loss = calc_loss(logits, y_train_onehot)
