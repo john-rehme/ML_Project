@@ -4,6 +4,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.optim import Adam
+import torchvision
+from torchvision.io import read_image
 import csv
 
 class Net(nn.Module):
@@ -27,37 +29,17 @@ def calc_accuracy(logits, y): # TODO
 
 ### READ FILES
 # TODO
-
-'''
-folder_pathMiD = "train/MildDemented"  # replace with the path to your folder
-file_names_mildDemented = os.listdir(folder_pathMiD)
-
-folder_pathMoD = "train/ModerateDemented"  # replace with the path to your folder
-file_names_moderateDemented = os.listdir(folder_pathMoD)
-
-folder_pathND = "train/NonDemented"  # replace with the path to your folder
-file_names_nonDemented = os.listdir(folder_pathND)
-
-folder_pathVMD = "train/VeryMildDemented"  # replace with the path to your folder
-file_names_veryMildDemented = os.listdir(folder_pathVMD)
-
-print(len(file_names_mildDemented))
-print(len(file_names_moderateDemented))
-print(len(file_names_nonDemented))
-print(len(file_names_veryMildDemented))
-'''
-
-
-print(os.listdir("train"))
-for item in os.listdir("train")[1:]:
+path = 'train'
+print(os.listdir(path))
+for item in os.listdir(path)[1:]:
     print(item)
-    item_path = os.path.join("train", item)
+    item_path = os.path.join(path, item)
     for image in os.listdir(item_path):
         image_path = os.path.join(item_path, image)
         print(image_path)
+        x = torchvision.io.read_image(image_path)
+        print(x)
         break
-        
-        
 
 TRAIN_SIZE = ___
 TEST_SIZE  = ___
