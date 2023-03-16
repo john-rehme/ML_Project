@@ -52,7 +52,10 @@ print(os.listdir("train"))
 for item in os.listdir("train")[1:]:
     print(item)
     item_path = os.path.join("train", item)
-    #for image in os.listdir(item_path):
+    for image in os.listdir(item_path):
+        image_path = os.path.join(item_path, image)
+        print(image_path)
+        break
         
         
 
