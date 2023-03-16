@@ -15,39 +15,56 @@ class Net(nn.Module):
         self.conv = nn.Conv3d(dim, dim_embed, 3, bias=bias)
 
     def forward(self, x):
-        return self.conv(x)
+        return self.conv(x) # TODO -> result should be shape [BATCH_SIZE, NUM_CLASS] of logits
     
-def calc_loss(logits, target):
+def calc_loss(logits, y):
     loss_func = nn.CrossEntropyLoss() # TODO: look into weights parameter
-    loss_func(logits, target)
-    return loss
+    loss_func(logits, y)
+    return loss # shape [BATCH_SIZE]
 
-def calc_accuracy(logits, y): # TODO
-    y_hat = logits.max # TODO: convert logits into one-hot prediction using argmax and scatter
+def calc_accuracy(logits, y):
+    y_hat = logits.max # TODO: convert logits into prediction using argmax
     accuracy = (y_hat == y).sum() / y.shape[0]
-    return accuracy
+    return accuracy # shape [BATCH_SIZE]
 
 ### READ FILES
-# TODO
-path = 'train'
-print(os.listdir(path))
-for item in os.listdir(path)[1:]:
-    print(item)
-    item_path = os.path.join(path, item)
-    for image in os.listdir(item_path):
-        image_path = os.path.join(item_path, image)
-        print(image_path)
-        x = torchvision.io.read_image(image_path)
-        print(x)
-        break
-
-TRAIN_SIZE = ___
-TEST_SIZE  = ___
-#NUM_LAYS   = ___
-NUM_ROWS   = ___
-NUM_COLS   = ___
-NUM_CHANS  = ___
 NUM_CLASS  = 4
+
+label_to_int = {'NonDemented': 0, 'VeryMildDemented': 1, 'MildDemented': 2, 'ModerateDemented': 3}
+
+x_train = []
+y_train = []
+data_path = 'train'
+for folder in os.listdir(data_path)[1:]:
+    folder_path = os.path.join(data_path, folder)
+    for file in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, file)
+        image = torchvision.io.read_image(file_path)
+        x_train.append(image)
+        y_train.append(folder)
+x_train = torch.stack(x_train, 0)
+y_train = torch.tensor([label_to_int[y] for y in y_train])
+y_train_onehot = torch.scatter(torch.zeros(y_train.shape[0], NUM_CLASS), 1, y_train.unsqueeze(1), torch.ones(y_train.shape[0], 1))
+
+x_test = []
+y_test = []
+data_path = 'test'
+for folder in os.listdir(data_path)[1:]:
+    folder_path = os.path.join(data_path, folder)
+    for file in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, file)
+        image = torchvision.io.read_image(file_path)
+        x_test.append(image)
+        y_test.append(folder)
+x_test = torch.stack(x_test, 0)
+y_test = torch.tensor([label_to_int[y] for y in y_test])
+y_test_onehot = torch.scatter(torch.zeros(y_test.shape[0], NUM_CLASS), 1, y_test.unsqueeze(1), torch.ones(y_test.shape[0], 1))
+
+TRAIN_SIZE = x_train.shape[0]
+TEST_SIZE  = x_test.shape[0]
+NUM_ROWS   = x_train.shape[2]
+NUM_COLS   = x_train.shape[3]
+NUM_CHANS  = x_train.shape[1]
 
 ### SET PARAMETERS
 
@@ -57,7 +74,7 @@ BATCH_SIZE      = 16
 LEARNING_RATE   = 0.01
 MAX_GRAD_NORM   = 2
 MAX_STEPS       = 1000
-LOG_INTERVAL    = 20
+LOG_INTERVAL    = 20 # doesn't affect learning
 
 # MODEL PARAMETERS
 DIM_EMBED       = 16
@@ -103,10 +120,9 @@ for epoch in range(1, MAX_STEPS + 1):
     accuracy_train = []
     #TODO: break training into batches (x and y) -> DataLoader?
     for _ in range(TRAIN_SIZE // BATCH_SIZE):
-        logits = model(x) # TODO -> result should be shape [BATCH_SIZE, NUM_CLASS] of logits
-        target = ___ # TODO: convert y into one-hot target vectors using scatter
-        loss = calc_loss(logits, target)
-        accuracy = calc_accuracy(logits, y)
+        logits = model(x_train)
+        loss = calc_loss(logits, y_train_onehot)
+        accuracy = calc_accuracy(logits, y_train)
         
         ### APPEND LOSS AND ACCURACY
         if epoch % LOG_INTERVAL == 0:
@@ -135,20 +151,18 @@ for epoch in range(1, MAX_STEPS + 1):
         print('Step: {}, Time: {}'.format(epoch,  time.strftime('%H:%M:%S', time.gmtime(end_time))))
         row = [epoch]
         
-        ### LOG TRAIN LOSS AND ACCURACY # TODO: from loss_train and accuracy_train
+        ### LOG TRAIN LOSS AND ACCURACY
         # TODO: print mean loss and accuracy
         # TODO: add mean training loss and accuracy to log with row.extend()
         
         ### TEST TRAINED MODEL
         print('Testing...')
         with torch.no_grad():
-            # TODO: test step (same as training)
-            logits = model(x) # TODO
-            target = ___ # TODO: convert y into one-hot binary target vectors
-            loss_test = calc_loss(logits, target)
-            accuracy_test = calc_accuracy(logits, y)
+            logits = model(x_test)
+            loss_test = calc_loss(logits, y_test_onehot)
+            accuracy_test = calc_accuracy(logits, y_test)
             
-        ### LOG TEST LOSS AND ACCURACY # TODO: from loss_test and accuracy_test
+        ### LOG TEST LOSS AND ACCURACY
         # TODO: print mean loss and accuracy
         # TODO: add mean testing loss and accuracy to log with row.extend()
         
