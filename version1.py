@@ -117,19 +117,19 @@ start_time = time.time()
 for epoch in range(1, MAX_STEPS + 1):
     loss_train = []
     accuracy_train = []
+    # TODO: look into DataLoader for shuffling and batching
     shuffle = torch.randperm(TEST_SIZE)
     x_train_shuffled = x_train[shuffle]
     y_train = y_train[shuffle]
     y_train_onehot = y_train_onehot[shuffle]
-    # TODO: break into batches (x and y) -> DataLoader would be able to batch and shuffle
-    for _ in range(TRAIN_SIZE // BATCH_SIZE):
-        logits = model(x_train)
-        loss = calc_loss(logits, y_train_onehot)
-        accuracy = calc_accuracy(logits, y_train)
+    for i in range(0, TRAIN_SIZE, BATCH_SIZE):
+        logits = model(x_train[i: i + BATCH_SIZE])
+        loss = calc_loss(logits, y_train_onehot[i: i + BATCH_SIZE])
+        accuracy = calc_accuracy(logits, y_train[i: i + BATCH_SIZE])
         
         ### APPEND LOSS AND ACCURACY
         if epoch % LOG_INTERVAL == 0:
-            loss_train.append(loss.mean())
+            loss_train.append(loss)
             accuracy_train.append(accuracy)
     
         ### ACTOR UPDATE
