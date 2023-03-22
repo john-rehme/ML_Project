@@ -8,7 +8,7 @@ import torchvision
 from torchvision.io import read_image
 import csv
 
-class Net(nn.Module): # TODO
+class Net(nn.Module): # TODO: add complexity and activation functions
     def __init__(self, start_dim, end_dim, bias=True):
         super(Net, self).__init__()
         self.conv2d1 = nn.Conv2d(start_dim, 5, 3, bias=bias)
@@ -33,24 +33,24 @@ class Net(nn.Module): # TODO
         return y # shape [BATCH_SIZE, NUM_CLASS]
     
 def calc_loss(logits, y):
-    loss_func = nn.CrossEntropyLoss() # TODO: look into weights parameter
-    loss = loss_func(logits, y) # TODO: fix. batch isnt working? # does it even need batches?
+    loss_func = nn.CrossEntropyLoss(reduction='none') # TODO: look into weights parameter
+    loss = loss_func(logits, y)
     return loss # shape [BATCH_SIZE]
 
 def calc_accuracy(logits, y):
-    y_hat = torch.argmax(logits, 1) # TODO: convert logits into prediction using argmax
-    accuracy = (y_hat == y).sum() / BATCH_SIZE
+    y_hat = torch.argmax(logits, 1)
+    accuracy = y_hat == y
     return accuracy # shape [BATCH_SIZE]
 
 ### SET PARAMETERS
 
 # HYPERPARAMETERS
 SEED            = 0
-BATCH_SIZE      = 16
+BATCH_SIZE      = 1024
 LEARNING_RATE   = 0.01
 MAX_GRAD_NORM   = 2
-MAX_STEPS       = 1000
-LOG_INTERVAL    = 20 # doesn't affect learning
+MAX_STEPS       = 10
+LOG_INTERVAL    = 1 # doesn't affect learning
 
 # MODEL PARAMETERS
 # DIM_EMBED       = 16
@@ -77,7 +77,7 @@ for folder in os.listdir(data_path)[1:]:
         y_train.append(folder)
 x_train = torch.stack(x_train, 0) / 256
 y_train = torch.tensor([label_to_int[y] for y in y_train])
-y_train_onehot = torch.scatter(torch.zeros(y_train.shape[0], NUM_CLASS), 1, y_train.unsqueeze(1), torch.ones(y_train.shape[0], 1))
+# y_train_onehot = torch.scatter(torch.zeros(y_train.shape[0], NUM_CLASS), 1, y_train.unsqueeze(1), torch.ones(y_train.shape[0], 1))
 
 x_test = []
 y_test = []
@@ -91,7 +91,7 @@ for folder in os.listdir(data_path)[1:]:
         y_test.append(folder)
 x_test = torch.stack(x_test, 0) / 256
 y_test = torch.tensor([label_to_int[y] for y in y_test])
-y_test_onehot = torch.scatter(torch.zeros(y_test.shape[0], NUM_CLASS), 1, y_test.unsqueeze(1), torch.ones(y_test.shape[0], 1))
+# y_test_onehot = torch.scatter(torch.zeros(y_test.shape[0], NUM_CLASS), 1, y_test.unsqueeze(1), torch.ones(y_test.shape[0], 1))
 
 TRAIN_SIZE = x_train.shape[0]
 TEST_SIZE  = x_test.shape[0]
@@ -104,23 +104,23 @@ model = Net(NUM_CHANS, NUM_CLASS)
 optimizer = Adam(model.parameters(), lr=LEARNING_RATE)
 
 ### INITIALIZE SAVE DIRECTORY
-characteristics = 'version{}'.format(1)
+characteristics = f'version{1}'
 time_id         = time.strftime('%Y-%m-%d %H-%M-%S')
 save_dir        = os.path.join(characteristics, time_id)
 os.makedirs(save_dir)
 
-### LOAD CHECKPOINT
-cp_path = os.path.join(characteristics, CP_TIME, '{}.pt'.format(CP_STEP))
+### LOAD CHECKPOINT # TODO: move checkpoint to utils.py
+cp_path = os.path.join(characteristics, CP_TIME, f'{CP_STEP}.pt')
 if os.path.isfile(cp_path):
     print('Loading checkpoint...\n')
     checkpoint = torch.load(cp_path)
     model.load_state_dict(checkpoint['model'])
     optimizer.load_state_dict(checkpoint['optimizer'])
 else:
-    print('Continuing with no checkpoint... \n')
+    print('Starting with no checkpoint...\n')
 
-### SET LOG WRITER
-log_name = '{}.csv'.format(characteristics)
+### SET LOG WRITER # TODO: move log to utils.py
+log_name = f'{characteristics}.csv'
 log_path = os.path.join(save_dir, log_name)
 with open(log_path, 'w', newline='') as f:
     header = ['Step', 'Mean_train_loss', 'Train_accuracy', 'Mean_test_loss', 'Test_accuracy']
@@ -131,25 +131,25 @@ with open(log_path, 'w', newline='') as f:
 print('Training...\n')
 start_time = time.time()
 for epoch in range(1, MAX_STEPS + 1):
-    loss_train = []
-    accuracy_train = []
+    loss_train = torch.empty((0))
+    accuracy_train = torch.empty((0))
     # TODO: look into DataLoader for shuffling and batching
-    shuffle = torch.randperm(TEST_SIZE)
+    shuffle = torch.randperm(TRAIN_SIZE)
     x_train_shuffled = x_train[shuffle]
-    y_train = y_train[shuffle]
-    y_train_onehot = y_train_onehot[shuffle]
+    y_train_shuffled = y_train[shuffle]
+    # y_train_onehot = y_train_onehot[shuffle]
     for i in range(0, TRAIN_SIZE, BATCH_SIZE):
-        logits = model(x_train[i: i + BATCH_SIZE])
-        loss = calc_loss(logits, y_train_onehot[i: i + BATCH_SIZE])
-        accuracy = calc_accuracy(logits, y_train[i: i + BATCH_SIZE])
+        logits = model(x_train_shuffled[i: i + BATCH_SIZE])
+        loss = calc_loss(logits, y_train_shuffled[i: i + BATCH_SIZE])
+        accuracy = calc_accuracy(logits, y_train_shuffled[i: i + BATCH_SIZE])
         
         ### APPEND LOSS AND ACCURACY
         if epoch % LOG_INTERVAL == 0:
-            loss_train.append(loss)
-            accuracy_train.append(accuracy)
+            loss_train = torch.cat((loss_train, loss))
+            accuracy_train = torch.cat((accuracy_train, accuracy))
     
         ### ACTOR UPDATE
-        model_loss = loss.mean().view(1)
+        model_loss = loss.sum().view(1) # losses are summed instead of averaged for differing batch sizes
         optimizer.zero_grad()
         model_loss.backward()
         nn.utils.clip_grad_norm_(model.parameters(), MAX_GRAD_NORM)
@@ -159,7 +159,7 @@ for epoch in range(1, MAX_STEPS + 1):
     if epoch % LOG_INTERVAL == 0:
         
         ### SAVE CHECKPOINT
-        epoch_path = os.path.join(save_dir, "{}.pt".format(epoch))
+        epoch_path = os.path.join(save_dir, f'{epoch}.pt')
         checkpoint = {}
         checkpoint['model'] = model.state_dict()
         checkpoint['optimizer'] = optimizer.state_dict()
@@ -167,23 +167,27 @@ for epoch in range(1, MAX_STEPS + 1):
     
         ### START LOG
         end_time = time.time() - start_time
-        print('Step: {}, Time: {}'.format(epoch,  time.strftime('%H:%M:%S', time.gmtime(end_time))))
+        print(f'\nStep: {epoch}, Time: {time.strftime("%H:%M:%S", time.gmtime(end_time))}')
         row = [epoch]
         
         ### LOG TRAIN LOSS AND ACCURACY
-        # TODO: print mean loss and accuracy
-        # TODO: add mean training loss and accuracy to log with row.extend()
+        print(f'Mean_train_loss:\t{loss_train.mean().item()}')
+        print(f'Train_accuracy:\t\t{(accuracy_train.sum() / TRAIN_SIZE).item()}')
+        row.append(loss_train.mean().item())
+        row.append((accuracy_train.sum() / TRAIN_SIZE).item())
         
         ### TEST TRAINED MODEL
         print('Testing...')
         with torch.no_grad():
             logits = model(x_test)
-            loss_test = calc_loss(logits, y_test_onehot)
+            loss_test = calc_loss(logits, y_test)
             accuracy_test = calc_accuracy(logits, y_test)
             
         ### LOG TEST LOSS AND ACCURACY
-        # TODO: print mean loss and accuracy
-        # TODO: add mean testing loss and accuracy to log with row.extend()
+        print(f'Mean_test_loss:\t\t{loss_test.mean().item()}')
+        print(f'Test_accuracy:\t\t{(accuracy_test.sum() / TEST_SIZE).item()}')
+        row.append(loss_test.mean().item())
+        row.append((accuracy_test.sum() / TEST_SIZE).item())
         
         ### LOG
         with open(log_path, 'a', newline='') as f:
