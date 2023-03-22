@@ -9,21 +9,37 @@ from torchvision.io import read_image
 import csv
 
 class Net(nn.Module): # TODO
-    def __init__(self, dim, dim_embed, bias=True):
+    def __init__(self, start_dim, end_dim, bias=True):
         super(Net, self).__init__()
-        self.conv = nn.Conv2d(dim, dim_embed, 3, bias=bias)
+        self.conv2d1 = nn.Conv2d(start_dim, 5, 3, bias=bias)
+        self.conv2d2 = nn.Conv2d(5, 10, 3, bias=bias)
+        self.conv2d3 = nn.Conv2d(10, 3, 3, bias=bias)
+        self.conv2d4 = nn.Conv2d(3, 1, 3, bias=bias)
+        self.linear1 = nn.Linear(33600, 8192, bias=bias)
+        self.linear2 = nn.Linear(8192, 1024, bias=bias)
+        self.linear3 = nn.Linear(1024, 32, bias=bias)
+        self.linear4 = nn.Linear(32, end_dim, bias=bias)
 
     def forward(self, x):
-        return self.conv(x) # shape [BATCH_SIZE, NUM_CLASS]
+        y = self.conv2d1(x)
+        y = self.conv2d2(y)
+        y = self.conv2d3(y)
+        y = self.conv2d4(y)
+        y = y.squeeze(1).flatten(start_dim=1)
+        y = self.linear1(y)
+        y = self.linear2(y)
+        y = self.linear3(y)
+        y = self.linear4(y)
+        return y # shape [BATCH_SIZE, NUM_CLASS]
     
 def calc_loss(logits, y):
     loss_func = nn.CrossEntropyLoss() # TODO: look into weights parameter
-    loss_func(logits, y)
+    loss = loss_func(logits, y) # TODO: fix. batch isnt working? # does it even need batches?
     return loss # shape [BATCH_SIZE]
 
 def calc_accuracy(logits, y):
-    y_hat = logits.max # TODO: convert logits into prediction using argmax
-    accuracy = (y_hat == y).sum() / y.shape[0]
+    y_hat = torch.argmax(logits, 1) # TODO: convert logits into prediction using argmax
+    accuracy = (y_hat == y).sum() / BATCH_SIZE
     return accuracy # shape [BATCH_SIZE]
 
 ### SET PARAMETERS
@@ -37,8 +53,8 @@ MAX_STEPS       = 1000
 LOG_INTERVAL    = 20 # doesn't affect learning
 
 # MODEL PARAMETERS
-DIM_EMBED       = 16
-KERNEL_SIZE     = 3
+# DIM_EMBED       = 16
+# KERNEL_SIZE     = 3
 
 # LOAD CHECKPOINT INFORMATION
 CP_TIME         = ''
@@ -84,11 +100,11 @@ NUM_ROWS   = x_train.shape[2]
 NUM_COLS   = x_train.shape[3]
 
 ### INITIALIZE MODEL
-model = Net(NUM_CHANS, DIM_EMBED, KERNEL_SIZE)
-optimizer = Adam(model.parameerters(), lr=LEARNING_RATE)
+model = Net(NUM_CHANS, NUM_CLASS)
+optimizer = Adam(model.parameters(), lr=LEARNING_RATE)
 
 ### INITIALIZE SAVE DIRECTORY
-characteristics = '{}'.format(KERNEL_SIZE)
+characteristics = 'version{}'.format(1)
 time_id         = time.strftime('%Y-%m-%d %H-%M-%S')
 save_dir        = os.path.join(characteristics, time_id)
 os.makedirs(save_dir)
@@ -111,7 +127,7 @@ with open(log_path, 'w', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(header)
 
-### TRAIN POLICY
+### TRAIN POLICY # TODO: requires_grad = True?
 print('Training...\n')
 start_time = time.time()
 for epoch in range(1, MAX_STEPS + 1):
