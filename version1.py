@@ -8,29 +8,39 @@ import torchvision
 from torchvision.io import read_image
 import csv
 
-class Net(nn.Module): # TODO: add complexity and activation functions
+class Net(nn.Module): # TODO: revise architecture and add dropout and max pooling
     def __init__(self, start_dim, end_dim, bias=True):
         super(Net, self).__init__()
-        self.conv2d1 = nn.Conv2d(start_dim, 5, 3, bias=bias)
-        self.conv2d2 = nn.Conv2d(5, 10, 3, bias=bias)
-        self.conv2d3 = nn.Conv2d(10, 3, 3, bias=bias)
-        self.conv2d4 = nn.Conv2d(3, 1, 3, bias=bias)
-        self.linear1 = nn.Linear(33600, 8192, bias=bias)
-        self.linear2 = nn.Linear(8192, 1024, bias=bias)
-        self.linear3 = nn.Linear(1024, 32, bias=bias)
-        self.linear4 = nn.Linear(32, end_dim, bias=bias)
+        self.conv2d1 = nn.Conv2d(start_dim, 16, 5, bias=bias)
+        self.conv2d2 = nn.Conv2d(16, 16, 9, stride=3, bias=bias)
+        self.conv2d3 = nn.Conv2d(16, 1, 9, bias=bias)
+
+        self.linear1 = nn.Linear(2726, 256, bias=bias)
+        self.linear2 = nn.Linear(256, end_dim, bias=bias)
 
     def forward(self, x):
-        y = self.conv2d1(x)
-        y = self.conv2d2(y)
-        y = self.conv2d3(y)
-        y = self.conv2d4(y)
+        y = torch.tanh(self.conv2d1(x))
+        y = torch.tanh(self.conv2d2(y))
+        y = torch.tanh(self.conv2d3(y))
         y = y.squeeze(1).flatten(start_dim=1)
-        y = self.linear1(y)
-        y = self.linear2(y)
-        y = self.linear3(y)
-        y = self.linear4(y)
+        y = torch.tanh(self.linear1(y))
+        y = torch.tanh(self.linear2(y))
         return y # shape [BATCH_SIZE, NUM_CLASS]
+    
+def read_data(data_path):
+    x = []
+    y = []
+    for folder in os.listdir(data_path)[1:]:
+        folder_path = os.path.join(data_path, folder)
+        for file in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, file)
+            image = torchvision.io.read_image(file_path)
+            x.append(image)
+            y.append(folder)
+    x = torch.stack(x, 0) / 256
+    y = torch.tensor([label_to_int[y] for y in y])
+    y_onehot = torch.scatter(torch.zeros(y.shape[0], NUM_CLASS), 1, y.unsqueeze(1), torch.ones(y.shape[0], 1))
+    return x, y, y_onehot
     
 def calc_loss(logits, y):
     loss_func = nn.CrossEntropyLoss(reduction='none') # TODO: look into weights parameter
@@ -46,7 +56,7 @@ def calc_accuracy(logits, y):
 
 # HYPERPARAMETERS
 SEED            = 0
-BATCH_SIZE      = 1024
+BATCH_SIZE      = 2048
 LEARNING_RATE   = 0.01
 MAX_GRAD_NORM   = 2
 MAX_STEPS       = 10
@@ -62,36 +72,10 @@ CP_STEP         = 0
 
 ### READ DATA
 NUM_CLASS  = 4
-
 label_to_int = {'NonDemented': 0, 'VeryMildDemented': 1, 'MildDemented': 2, 'ModerateDemented': 3}
 
-x_train = []
-y_train = []
-data_path = 'train'
-for folder in os.listdir(data_path)[1:]:
-    folder_path = os.path.join(data_path, folder)
-    for file in os.listdir(folder_path):
-        file_path = os.path.join(folder_path, file)
-        image = torchvision.io.read_image(file_path)
-        x_train.append(image)
-        y_train.append(folder)
-x_train = torch.stack(x_train, 0) / 256
-y_train = torch.tensor([label_to_int[y] for y in y_train])
-# y_train_onehot = torch.scatter(torch.zeros(y_train.shape[0], NUM_CLASS), 1, y_train.unsqueeze(1), torch.ones(y_train.shape[0], 1))
-
-x_test = []
-y_test = []
-data_path = 'test'
-for folder in os.listdir(data_path)[1:]:
-    folder_path = os.path.join(data_path, folder)
-    for file in os.listdir(folder_path):
-        file_path = os.path.join(folder_path, file)
-        image = torchvision.io.read_image(file_path)
-        x_test.append(image)
-        y_test.append(folder)
-x_test = torch.stack(x_test, 0) / 256
-y_test = torch.tensor([label_to_int[y] for y in y_test])
-# y_test_onehot = torch.scatter(torch.zeros(y_test.shape[0], NUM_CLASS), 1, y_test.unsqueeze(1), torch.ones(y_test.shape[0], 1))
+x_train, y_train, _ = read_data('train')
+x_test,  y_test,  _ = read_data('test')
 
 TRAIN_SIZE = x_train.shape[0]
 TEST_SIZE  = x_test.shape[0]
@@ -106,10 +90,10 @@ optimizer = Adam(model.parameters(), lr=LEARNING_RATE)
 ### INITIALIZE SAVE DIRECTORY
 characteristics = f'version{1}'
 time_id         = time.strftime('%Y-%m-%d %H-%M-%S')
-save_dir        = os.path.join(characteristics, time_id)
+save_dir        = os.path.join('results', characteristics, time_id)
 os.makedirs(save_dir)
 
-### LOAD CHECKPOINT # TODO: move checkpoint to utils.py
+### LOAD CHECKPOINT
 cp_path = os.path.join(characteristics, CP_TIME, f'{CP_STEP}.pt')
 if os.path.isfile(cp_path):
     print('Loading checkpoint...\n')
@@ -119,7 +103,7 @@ if os.path.isfile(cp_path):
 else:
     print('Starting with no checkpoint...\n')
 
-### SET LOG WRITER # TODO: move log to utils.py
+### SET LOG WRITER
 log_name = f'{characteristics}.csv'
 log_path = os.path.join(save_dir, log_name)
 with open(log_path, 'w', newline='') as f:
@@ -128,7 +112,7 @@ with open(log_path, 'w', newline='') as f:
     writer.writerow(header)
 
 ### TRAIN POLICY # TODO: requires_grad = True?
-print('Training...\n')
+print('Training...')
 start_time = time.time()
 for epoch in range(1, MAX_STEPS + 1):
     loss_train = torch.empty((0))
