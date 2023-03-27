@@ -1,0 +1,57 @@
+imports
+
+network definition
+
+	initialization
+
+	forward function
+
+read data function
+
+calculate loss function
+
+calculate accuracy function
+
+set parameters
+	
+	hyperparameters
+
+	model parameters
+
+	loading checkpoint location
+
+read data (call read data function)
+
+initialize model (call net init)
+
+initialize save directory
+
+load checkpoint (if there is one)
+
+set log writer with data headers
+
+training loop
+
+	shuffle test data and split into batches
+
+	run through network
+	calculate loss
+	calculate accuracy
+
+	if log:
+		append loss and accuracy
+
+	actor update via optimizer
+
+	if log:
+		save checkpoint
+
+		add epoch number to log
+
+		add training loss and accuracy to log
+
+		run test data through model
+
+		add testing loss and accuracy to log
+
+		write log into csv file
