@@ -111,7 +111,7 @@ with open(log_path, 'w', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(header)
 
-### TRAIN POLICY # TODO: requires_grad = True?
+### TRAIN MODEL # TODO: requires_grad = True?
 print('Training...')
 start_time = time.time()
 for epoch in range(1, MAX_STEPS + 1):

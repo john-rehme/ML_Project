@@ -88,7 +88,7 @@ model = Net(NUM_CHANS, NUM_CLASS)
 optimizer = Adam(model.parameters(), lr=LEARNING_RATE)
 
 ### INITIALIZE SAVE DIRECTORY
-characteristics = f'version{1}'
+characteristics = f'version{2}'
 time_id         = time.strftime('%Y-%m-%d %H-%M-%S')
 save_dir        = os.path.join('results', characteristics, time_id)
 os.makedirs(save_dir)
@@ -111,7 +111,7 @@ with open(log_path, 'w', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(header)
 
-### TRAIN POLICY # TODO: requires_grad = True?
+### TRAIN MODEL # TODO: requires_grad = True?
 print('Training...')
 start_time = time.time()
 for epoch in range(1, MAX_STEPS + 1):
