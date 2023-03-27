@@ -34,7 +34,7 @@ training loop
 
 	shuffle test data and split into batches
 
-	run through network
+	run batched train data through network
 	calculate loss
 	calculate accuracy
 
@@ -50,7 +50,9 @@ training loop
 
 		add training loss and accuracy to log
 
-		run test data through model
+		run test data through network
+		calculate loss
+		calculate accuracy
 
 		add testing loss and accuracy to log
 
