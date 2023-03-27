@@ -31,6 +31,10 @@ There are many potential ways to quantify the data, and there is likely no singl
 
 ![](assets/Gantt_Chart.png)
 
+## Dataset
+
+[Click Here](https://www.kaggle.com/datasets/tourist55/alzheimers-dataset-4-class-of-images)
+
 ## Works Cited
 
 Cummings, B. J., & Cotman, C. W. (1995). Image analysis of β-amyloid load in Alzheimer's disease and relation to dementia severity. The Lancet, 346(8989), 1524-1528.
@@ -44,7 +48,6 @@ Oyedotun, O. K., Al Ismaeil, K., & Aouada, D. (2022). Why is everyone training v
 Scheltens, P., De Strooper, B., Kivipelto, M., Holstege, H., Chételat, G., Teunissen, C. E., ... & van der Flier, W. M. (2021). Alzheimer's disease. The Lancet, 397(10284), 1577-1590.
 
 Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., ... & Polosukhin, I. (2017). Attention is all you need. Advances in neural information processing systems, 30.
-
 
 
 
