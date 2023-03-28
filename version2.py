@@ -44,7 +44,7 @@ def read_data(data_path):
     return x, y, y_onehot
     
 def calc_loss(logits, y):
-    loss_func = nn.CrossEntropyLoss(reduction='none') # TODO: look into weights parameter
+    loss_func = nn.CrossEntropyLoss(weight=torch.tensor([0.25, 0.17, 0.07, 0.01]), reduction='none') # TODO: look into weights parameter
     loss = loss_func(logits, y)
     return loss # shape [BATCH_SIZE]
 
