@@ -7,6 +7,7 @@ from torch.optim import Adam
 import torchvision
 from torchvision.io import read_image
 import csv
+import numpy as np
 
 class Net(nn.Module): # TODO: revise architecture and add dropout and max pooling
     def __init__(self, start_dim, end_dim, bias=True):
@@ -59,7 +60,7 @@ SEED            = 0
 BATCH_SIZE      = 2048
 LEARNING_RATE   = 0.01
 MAX_GRAD_NORM   = 2
-MAX_STEPS       = 10
+MAX_STEPS       = 5
 LOG_INTERVAL    = 1 # doesn't affect learning
 
 # MODEL PARAMETERS
@@ -177,3 +178,22 @@ for epoch in range(1, MAX_STEPS + 1):
         with open(log_path, 'a', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(row)
+
+#Creating Confusion Matrix
+def confusion_matrix(model, x, y_true, class_labels):
+    model.eval()
+    with torch.no_grad():
+        y_pred = model(x)
+        y_pred = torch.argmax(y_pred, dim=1)
+        num_classes = len(class_labels)
+        cm = np.zeros((num_classes, num_classes), dtype=int)
+        for i, j in zip(y_true, y_pred):
+            cm[i][j] += 1
+        print('Confusion matrix:')
+        print('Actual\Predicted\t' + '\t'.join(class_labels))
+        for i in range(num_classes):
+            print('{}\t\t{}'.format(class_labels[i], '\t'.join(str(cm[i][j]) for j in range(num_classes))))
+    return cm
+
+class_labels = list(label_to_int.keys())
+cm = confusion_matrix(model, x_test, y_test, class_labels)
