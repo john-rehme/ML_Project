@@ -53,6 +53,21 @@ def calc_accuracy(logits, y):
     accuracy = y_hat == y
     return accuracy # shape [BATCH_SIZE]
 
+def confusion_matrix(model, x, y_true, class_labels):
+    model.eval()
+    with torch.no_grad():
+        y_pred = model(x)
+        y_pred = torch.argmax(y_pred, dim=1)
+        num_classes = len(class_labels)
+        cm = np.zeros((num_classes, num_classes), dtype=int)
+        for i, j in zip(y_true, y_pred):
+            cm[i][j] += 1
+        print('Confusion matrix:')
+        print('Actual\Predicted\t' + '\t'.join(class_labels))
+        for i in range(num_classes):
+            print('{}\t\t{}'.format(class_labels[i], '\t'.join(str(cm[i][j]) for j in range(num_classes))))
+    return cm
+
 ### SET PARAMETERS
 
 # HYPERPARAMETERS
@@ -179,21 +194,6 @@ for epoch in range(1, MAX_STEPS + 1):
             writer = csv.writer(f)
             writer.writerow(row)
 
-#Creating Confusion Matrix
-def confusion_matrix(model, x, y_true, class_labels):
-    model.eval()
-    with torch.no_grad():
-        y_pred = model(x)
-        y_pred = torch.argmax(y_pred, dim=1)
-        num_classes = len(class_labels)
-        cm = np.zeros((num_classes, num_classes), dtype=int)
-        for i, j in zip(y_true, y_pred):
-            cm[i][j] += 1
-        print('Confusion matrix:')
-        print('Actual\Predicted\t' + '\t'.join(class_labels))
-        for i in range(num_classes):
-            print('{}\t\t{}'.format(class_labels[i], '\t'.join(str(cm[i][j]) for j in range(num_classes))))
-    return cm
-
+# CREATE CONFUSION MATRIX
 class_labels = list(label_to_int.keys())
 cm = confusion_matrix(model, x_test, y_test, class_labels)
