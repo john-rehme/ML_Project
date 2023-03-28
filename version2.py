@@ -20,13 +20,14 @@ class Net(nn.Module): # TODO: revise architecture and add dropout and max poolin
         self.linear2 = nn.Linear(256, end_dim, bias=bias)
 
     def forward(self, x):
+        # x shape [BATCH_SIZE, 1, 208, 176]
         y = torch.tanh(self.conv2d1(x))
         y = torch.tanh(self.conv2d2(y))
         y = torch.tanh(self.conv2d3(y))
         y = y.squeeze(1).flatten(start_dim=1)
         y = torch.tanh(self.linear1(y))
         y = torch.tanh(self.linear2(y))
-        return y # shape [BATCH_SIZE, NUM_CLASS]
+        return y # y shape [BATCH_SIZE, NUM_CLASS]
     
 def read_data(data_path):
     x = []
