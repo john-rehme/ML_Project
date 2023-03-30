@@ -41,6 +41,12 @@ Our current method for the midterm report involves a five-step forward feature s
 
 ![](assets/NetworkArch.JPG)
 
+Yellow = Convolutional Layer
+Purple = Fully Connected Layer
+
+The script sets hyperparameters and initializes the model and optimizer. If a checkpoint file exists, it loads the model and optimizer state from the file. It then sets up a log writer to write the results of each epoch to a CSV file. The model is trained for a specified number of epochs, where each epoch shuffles the training data and loops through batches of the data to perform forward and backward passes to optimize the model weights. During each batch, the loss and accuracy are calculated, and the values are appended to lists for the current epoch. After all batches are processed, the mean loss and accuracy for the epoch are calculated and written to the log writer. 
+
+
 
 ## Works Cited
 
