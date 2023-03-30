@@ -36,16 +36,32 @@ These scans are sourced from Open Access of Imaging Studies (OASIS). Dementia se
 
 We did not need to clean the dataset; this had already been done by OASIS.
 
-Results and Discussion
+## Results and Discussion
 Our current method for the midterm report involves a five-step forward feature selection. The network consists of three convolutional layers followed by two fully connected layers.
 
 ![](assets/NetworkArch.JPG)
 
 Yellow = Convolutional Layer
+
 Purple = Fully Connected Layer
 
 The script sets hyperparameters and initializes the model and optimizer. If a checkpoint file exists, it loads the model and optimizer state from the file. It then sets up a log writer to write the results of each epoch to a CSV file. The model is trained for a specified number of epochs, where each epoch shuffles the training data and loops through batches of the data to perform forward and backward passes to optimize the model weights. During each batch, the loss and accuracy are calculated, and the values are appended to lists for the current epoch. After all batches are processed, the mean loss and accuracy for the epoch are calculated and written to the log writer. 
 
+### TABLE HERE
+
+The table shows the mean train loss, train accuracy, mean test loss, and test accuracy for each step. Overall, it appears that the model improved significantly in terms of test accuracy over the course of the training process. The decrease in mean train loss and mean test loss suggests that the model is learning and improving over time.
+
+The confusion matrix shows the results of the model on the test data.
+
+![](assets/Confusion_Matrix.png)
+
+0 = Non-Demented
+
+1 = Very Mildly Demented
+
+2 = Mildly Demented
+
+3 = Moderately Demented
 
 
 ## Works Cited
