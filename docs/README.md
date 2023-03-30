@@ -18,11 +18,6 @@ To analyze the images we will mostly be utilizing convolutional neural networks 
 
 [Melanoma with Visual Attention](https://www2.cs.sfu.ca/~hamarneh/ecopy/ipmi2019.pdf) 
 
-
-## Results and Discussion:
-
-There are many potential ways to quantify the data, and there is likely no single best fit. We will start by using a simple combination of accuracy, precision, and recall metrics, which should provide a baseline level of information regarding the success of our system. We will refine our success metrics as time goes on.
-
 ## Contribution Table:
 
 ![](assets/Contribution_Table.png)
@@ -40,6 +35,12 @@ Our dataset is [Alzheimer's Dataset ( 4 class of Images)](https://www.kaggle.com
 These scans are sourced from Open Access of Imaging Studies (OASIS). Dementia severity was assessed using the Clinical Dementia Rating (CDR) scale (Marcus, et al., 2010).
 
 We did not need to clean the dataset; this had already been done by OASIS.
+
+Results and Discussion
+Our current method for the midterm report involves a five-step forward feature selection. The network consists of three convolutional layers followed by two fully connected layers.
+
+![](assets/NetworkArch.PNG)
+
 
 ## Works Cited
 
