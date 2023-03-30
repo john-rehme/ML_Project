@@ -35,7 +35,7 @@ There are many potential ways to quantify the data, and there is likely no singl
 
 Our dataset is “Alzheimer's Dataset ( 4 class of Images)” from Kaggle. It is composed of 6400 .jpg images, where each image represents a layer of an MRI scan. The images are divided into one of four categories: non-demented, very mildly demented, mildly demented, or moderately demented. The break-down of these files are as follows:
 
-![](assets/IMAGE_PATH.png)
+![](assets/Data Categories.png)
 These scans are sourced from Open Access of Imaging Studies (OASIS). Dementia severity was assessed using the Clinical Dementia Rating (CDR) scale (Marcus, et al., 2010).
 
 We did not need to clean the dataset; this had already been done by OASIS.
