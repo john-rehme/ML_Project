@@ -39,7 +39,7 @@ We did not need to clean the dataset; this had already been done by OASIS.
 Results and Discussion
 Our current method for the midterm report involves a five-step forward feature selection. The network consists of three convolutional layers followed by two fully connected layers.
 
-![](assets/NetworkArch.PNG)
+![](assets/NetworkArch.JPG)
 
 
 ## Works Cited
