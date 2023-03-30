@@ -18,14 +18,6 @@ To analyze the images we will mostly be utilizing convolutional neural networks 
 
 [Melanoma with Visual Attention](https://www2.cs.sfu.ca/~hamarneh/ecopy/ipmi2019.pdf) 
 
-## Contribution Table:
-
-![](assets/Contribution_Table.png)
-
-## Gantt Chart
-
-![](assets/Gantt_Chart.png)
-
 ## Dataset
 
 Our dataset is [Alzheimer's Dataset ( 4 class of Images)](https://www.kaggle.com/datasets/tourist55/alzheimers-dataset-4-class-of-images) from Kaggle. It is composed of 6400 .jpg images, where each image represents a layer of an MRI scan. The images are divided into one of four categories: non-demented, very mildly demented, mildly demented, or moderately demented. The break-down of these files are as follows:
@@ -63,6 +55,15 @@ The confusion matrix shows the results of the model on the test data.
 
 3 = Moderately Demented
 
+As shown by the table, the system is currently just guessing "Non-Demented" for every image in the testing set. While it gives an accuracy of about 50%, this is essentially meaningless, since no work is being done. This is something we plan to correct for the final presentation.
+
+## Contribution Table:
+
+![](assets/Contribution_Table.png)
+
+## Gantt Chart
+
+![](assets/Gantt_Chart.png)
 
 ## Works Cited
 
