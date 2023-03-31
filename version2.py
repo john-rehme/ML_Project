@@ -1,73 +1,11 @@
 import os
 import time
+from model import *
+from utils import *
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.optim import Adam
-import torchvision
-from torchvision.io import read_image
 import csv
-import numpy as np
-
-class Net(nn.Module): # TODO: revise architecture and add dropout and max pooling
-    def __init__(self, start_dim, end_dim, bias=True):
-        super(Net, self).__init__()
-        self.conv2d1 = nn.Conv2d(start_dim, 16, 5, bias=bias)
-        self.conv2d2 = nn.Conv2d(16, 16, 9, stride=3, bias=bias)
-        self.conv2d3 = nn.Conv2d(16, 1, 9, bias=bias)
-
-        self.linear1 = nn.Linear(2726, 256, bias=bias)
-        self.linear2 = nn.Linear(256, end_dim, bias=bias)
-
-    def forward(self, x):
-        # x shape [BATCH_SIZE, 1, 208, 176]
-        y = torch.tanh(self.conv2d1(x))
-        y = torch.tanh(self.conv2d2(y))
-        y = torch.tanh(self.conv2d3(y))
-        y = y.squeeze(1).flatten(start_dim=1)
-        y = torch.tanh(self.linear1(y))
-        y = torch.tanh(self.linear2(y))
-        return y # y shape [BATCH_SIZE, NUM_CLASS]
-    
-def read_data(data_path):
-    x = []
-    y = []
-    for folder in os.listdir(data_path)[1:]:
-        folder_path = os.path.join(data_path, folder)
-        for file in os.listdir(folder_path):
-            file_path = os.path.join(folder_path, file)
-            image = torchvision.io.read_image(file_path)
-            x.append(image)
-            y.append(folder)
-    x = torch.stack(x, 0) / 256
-    y = torch.tensor([label_to_int[y] for y in y])
-    y_onehot = torch.scatter(torch.zeros(y.shape[0], NUM_CLASS), 1, y.unsqueeze(1), torch.ones(y.shape[0], 1))
-    return x, y, y_onehot
-    
-def calc_loss(logits, y):
-    loss_func = nn.CrossEntropyLoss(weight=torch.tensor([2, 2.86, 7.14, 98.48]), reduction='none') # TODO: look into weights parameter
-    loss = loss_func(logits, y)
-    return loss # shape [BATCH_SIZE]
-
-def calc_accuracy(logits, y):
-    y_hat = torch.argmax(logits, 1)
-    accuracy = y_hat == y
-    return accuracy # shape [BATCH_SIZE]
-
-def confusion_matrix(model, x, y_true, class_labels):
-    model.eval()
-    with torch.no_grad():
-        y_pred = model(x)
-        y_pred = torch.argmax(y_pred, dim=1)
-        num_classes = len(class_labels)
-        cm = np.zeros((num_classes, num_classes), dtype=int)
-        for i, j in zip(y_true, y_pred):
-            cm[i][j] += 1
-        print('Confusion matrix:')
-        print('Actual\Predicted\t' + '\t'.join(class_labels))
-        for i in range(num_classes):
-            print('{}\t\t{}'.format(class_labels[i], '\t'.join(str(cm[i][j]) for j in range(num_classes))))
-    return cm
 
 ### SET PARAMETERS
 
@@ -78,8 +16,9 @@ LEARNING_RATE   = 0.01
 MAX_GRAD_NORM   = 2
 MAX_STEPS       = 5
 LOG_INTERVAL    = 1 # doesn't affect learning
+RETAINED_VARIANCE = .90
 
-# MODEL PARAMETERS
+# # MODEL PARAMETERS
 # DIM_EMBED       = 16
 # KERNEL_SIZE     = 3
 
@@ -89,8 +28,8 @@ CP_STEP         = 0
 
 ### READ DATA
 NUM_CLASS  = 4
-label_to_int = {'NonDemented': 0, 'VeryMildDemented': 1, 'MildDemented': 2, 'ModerateDemented': 3}
 
+print('Loading data...\n')
 x_train, y_train, _ = read_data('train')
 x_test,  y_test,  _ = read_data('test')
 
@@ -99,6 +38,12 @@ TEST_SIZE  = x_test.shape[0]
 NUM_CHANS  = x_train.shape[1]
 NUM_ROWS   = x_train.shape[2]
 NUM_COLS   = x_train.shape[3]
+
+### PREPROCESS DATA
+x_train = crop(x_train, top=16, bottom=16, left=16, right=16)
+x_test = crop(x_test, top=16, bottom=16, left=16, right=16)
+# x_train = pca(x_train, RETAINED_VARIANCE)
+# x_test = pca(x_test, RETAINED_VARIANCE)
 
 ### INITIALIZE MODEL
 model = Net(NUM_CHANS, NUM_CLASS)
@@ -128,13 +73,13 @@ with open(log_path, 'w', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(header)
 
-### TRAIN MODEL # TODO: requires_grad = True?
+### TRAIN MODEL
 print('Training...')
 start_time = time.time()
 for epoch in range(1, MAX_STEPS + 1):
+    model.train(True)
     loss_train = torch.empty((0))
     accuracy_train = torch.empty((0))
-    # TODO: look into DataLoader for shuffling and batching
     shuffle = torch.randperm(TRAIN_SIZE)
     x_train_shuffled = x_train[shuffle]
     y_train_shuffled = y_train[shuffle]
@@ -180,21 +125,20 @@ for epoch in range(1, MAX_STEPS + 1):
         ### TEST TRAINED MODEL
         print('Testing...')
         with torch.no_grad():
+            model.train(False)
             logits = model(x_test)
             loss_test = calc_loss(logits, y_test)
             accuracy_test = calc_accuracy(logits, y_test)
+            cm = calc_cm(logits, y_test)
             
         ### LOG TEST LOSS AND ACCURACY
         print(f'Mean_test_loss:\t\t{loss_test.mean().item()}')
         print(f'Test_accuracy:\t\t{(accuracy_test.sum() / TEST_SIZE).item()}')
         row.append(loss_test.mean().item())
         row.append((accuracy_test.sum() / TEST_SIZE).item())
+        cm_visualize(cm)
         
         ### LOG
         with open(log_path, 'a', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(row)
-
-# CREATE CONFUSION MATRIX
-class_labels = list(label_to_int.keys())
-cm = confusion_matrix(model, x_test, y_test, class_labels)
