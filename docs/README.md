@@ -9,16 +9,17 @@ In this project, we want to design a highly accurate model that can look at a .j
 ## Methods:
 To analyze the images we will mostly be utilizing convolutional neural networks in pytorch. Though CNNs will be the base of our model, depending on the necessary complexity, more features will be added. ResNets, or residual networks, are highly applicable to image classification as it was used to win the 2015 ImageNet competition (He, et al., 2016). From ResNets, we may pull the idea of skip connections to use in our model (Oyedotun, et al., 2021). Attention mechanisms may also be useful in our model to be able to specify which parts of the image are referenced for the final classification decision (Vaswani, et al, 2017).
 
+Our current method for the midterm report involves a five-step forward feature selection. The network consists of three convolutional layers followed by two fully connected layers.
 
-## References for us:
+![](assets/NetworkArch.JPG)
 
-[Image Processing](https://ieeexplore.ieee.org/document/8320684)
+Yellow = Convolutional Layer
 
-[Attention Intro](https://blog.paperspace.com/image-classification-with-attention/)
+Purple = Fully Connected Layer
 
-[Melanoma with Visual Attention](https://www2.cs.sfu.ca/~hamarneh/ecopy/ipmi2019.pdf) 
+The script sets hyperparameters and initializes the model and optimizer. If a checkpoint file exists, it loads the model and optimizer state from the file. It then sets up a log writer to write the results of each epoch to a CSV file. The model is trained for a specified number of epochs, where each epoch shuffles the training data and loops through batches of the data to perform forward and backward passes to optimize the model weights. During each batch, the loss and accuracy are calculated, and the values are appended to lists for the current epoch. After all batches are processed, the mean loss and accuracy for the epoch are calculated and written to the log writer.
 
-## Dataset
+## Dataset and Data Collection
 
 Our dataset is [Alzheimer's Dataset ( 4 class of Images)](https://www.kaggle.com/datasets/tourist55/alzheimers-dataset-4-class-of-images) from Kaggle. It is composed of 6400 .jpg images, where each image represents a layer of an MRI scan. The images are divided into one of four categories: non-demented, very mildly demented, mildly demented, or moderately demented. The break-down of these files are as follows:
 
@@ -30,16 +31,18 @@ We did not need to clean the dataset; this had already been done by OASIS.
 
 ![](assets/Class_Visualization.png)
 
+## References:
+
+[Image Processing](https://ieeexplore.ieee.org/document/8320684)
+
+[Attention Intro](https://blog.paperspace.com/image-classification-with-attention/)
+
+[Melanoma with Visual Attention](https://www2.cs.sfu.ca/~hamarneh/ecopy/ipmi2019.pdf) 
+
+
 ## Results and Discussion
-Our current method for the midterm report involves a five-step forward feature selection. The network consists of three convolutional layers followed by two fully connected layers.
 
-![](assets/NetworkArch.JPG)
-
-Yellow = Convolutional Layer
-
-Purple = Fully Connected Layer
-
-The script sets hyperparameters and initializes the model and optimizer. If a checkpoint file exists, it loads the model and optimizer state from the file. It then sets up a log writer to write the results of each epoch to a CSV file. The model is trained for a specified number of epochs, where each epoch shuffles the training data and loops through batches of the data to perform forward and backward passes to optimize the model weights. During each batch, the loss and accuracy are calculated, and the values are appended to lists for the current epoch. After all batches are processed, the mean loss and accuracy for the epoch are calculated and written to the log writer. 
+Our results are listed below after running the model.
 
 ![](assets/Accuracy_Loss_Table.png)
 
@@ -57,7 +60,15 @@ The confusion matrix shows the results of the model on the test data.
 
 3 = Moderately Demented
 
-As shown by the table, the system is currently just guessing "Non-Demented" for every image in the testing set. While it gives an accuracy of about 50%, this is essentially meaningless, since no work is being done. This is something we plan to correct for the final presentation.
+As mentioned earlier, this is a supervised method so we are able to assign the predicted label and true label in the confusion matrix to visualize these results.  As of now, every image is being assigned to Non-Demented leading to the 50% accuracy. This is not an ideal result from the model. We have been experimenting with different weights tensors to input into the model and different versions of data pre-processing to help the model choose other classifications. Additionally, we are investigating the addition of synthetic sampling to our dataset to generate more samples in the mildly and moderately demented datasets. 
+
+Currently our data pre-processing includes cropping each image by 10 pixels on either side reducing the image size from 208x176 to 188x156. This is helpful as every image has large black borders surrounding the actual image of the brain, alleviating pressure on the model. The image data is also normalized by dividing by 256, forcing every pixel value to be a number between [0, 1]. 
+
+Other important aspects of the model include using Adam as an optimizer and categorical cross entropy as the loss function. 
+
+## Next Steps:
+
+For the final, our goal is to have an accurate model that can identify the other classes of dementedness present in the dataset. To achieve this, we will look into adding more layers to the network architecture and more advanced data preprocessing techniques. We plan to incorporate max pooling and dropout layers to prevent overfitting, batch normalization to standardize input values across each batch and speed up the training process,  and additional convolutional layers to the model to enable better feature detection in the input images. Principal Component Analysis (PCA) along with the potential addition of synthetic samples will be essential to improve our model’s performance through preprocessing.
 
 ## Contribution Table:
 
