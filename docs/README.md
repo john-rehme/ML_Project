@@ -7,9 +7,9 @@ Alzheimer’s disease (“AD”) is an increasingly prevalent condition in aging
 In this project, we want to design a highly accurate model that can look at a .jpg of an MRI scan and classify whether the patient’s brain is non-demented, very mildly demented, mildly demented, or moderately demented. 
 
 ## Methods:
-To analyze the images we will mostly be utilizing convolutional neural networks in pytorch. Though CNNs will be the base of our model, depending on the necessary complexity, more features will be added. ResNets, or residual networks, are highly applicable to image classification as it was used to win the 2015 ImageNet competition (He, et al., 2016). From ResNets, we may pull the idea of skip connections to use in our model (Oyedotun, et al., 2021). Attention mechanisms may also be useful in our model to be able to specify which parts of the image are referenced for the final classification decision (Vaswani, et al, 2017).
+To analyze the images we will mostly be utilizing convolutional neural networks in pytorch. Though CNNs will be the base of our model, depending on the necessary complexity, more features will be added. ResNets, or residual networks, are highly applicable to image classification as it was used to win the 2015 ImageNet competition (He, et al., 2016). From ResNets, we may pull the idea of skip connections to use in our model (Oyedotun, et al., 2021). Attention mechanisms may also be useful in our model to be able to specify which parts of the image are referenced for the final classification decision (Vaswani, et al, 2017). However, we believe using Grad-CAM, will provide the output we want with simpler implementatio (Selvaraju, et al, 2017).
 
-Our current method for the midterm report involves a five-step forward feature selection. The network consists of three convolutional layers followed by two fully connected layers.
+Our current method for the midterm report involves a five-step forward feature selection. The network consists of three convolutional layers followed by two fully connected layers. The features are flattened to 1D after the third convolutional layer.
 
 ![](assets/NetworkArch.JPG)
 
@@ -60,21 +60,27 @@ The confusion matrix shows the results of the model on the test data.
 
 3 = Moderately Demented
 
-As mentioned earlier, this is a supervised method so we are able to assign the predicted label and true label in the confusion matrix to visualize these results.  As of now, every image is being assigned to Non-Demented leading to the 50% accuracy. This is not an ideal result from the model. We have been experimenting with different weights tensors to input into the model and different versions of data pre-processing to help the model choose other classifications. Additionally, we are investigating the addition of synthetic sampling to our dataset to generate more samples in the mildly and moderately demented datasets. 
+As mentioned earlier, this is a supervised method so we are able to assign the predicted label and true label in the confusion matrix to visualize these results. As of now, the model is predicting each image as Non-Demented leading to the 50% accuracy. This is not an ideal result from the model. We have been experimenting with different weights in the cross entropy loss criterion and different versions of data pre-processing to help the model diversify its classifications. Additionally, we are investigating the addition of synthetic sampling to our dataset to generate more samples in the mildly and moderately demented datasets. 
 
-Currently our data pre-processing includes cropping each image by 10 pixels on either side reducing the image size from 208x176 to 188x156. This is helpful as every image has large black borders surrounding the actual image of the brain, alleviating pressure on the model.
+Currently our data pre-processing includes cropping each image on each edge based on average brightness levels across all images. This is helpful as every image has large black borders surrounding the actual image of the brain, alleviating pressure on the model. Below shows two instances of cropping based on different brightness thresholds. The first is a more relaxed cropping that keeps any row or coumn with an average brightness over 0. The second is harsher, with its threshold at 0.1.
 
 ![](assets/Scan_Cropped.png)
 
-Above is an image of a scan before and after it was cropped. Almost all of the relevant information was preserved, but the numebr of features has been decreased quite a bit.
+Above is an image of a scan before and after it was cropped. Almost all of the relevant information was preserved, but the numeber of features has been decreased quite a bit.
+
+We have also began implementing PCA into preprocessing. This should help to cut down on the noise in the images. 
+
+![](assets/Scan_PCA.png)
+
+Above is an image of a original scan and the reprojected scan after PCA. It can be seen that the relative brightness of sections in the scan are maintained. PCA with k=2048 retained 99.998% of the variance, while k=1024 retained 99.4369%. An issue with PCA, however, is that since the image if flattened, its 2D nature is lost. The effects of this will require more testing.
 
 The image data is also normalized by dividing by 256, forcing every pixel value to be a number between [0, 1].
 
-Other important aspects of the model include using Adam as an optimizer and categorical cross entropy as the loss function. 
+Other important aspects of the model include using Adam as an optimizer and weighted categorical cross entropy as the loss function. The weights of the loss function are important as the data is heavily unbalanced.
 
 ## Next Steps:
 
-For the final, our goal is to have an accurate model that can identify the other classes of dementedness present in the dataset. To achieve this, we will look into adding more layers to the network architecture and more advanced data preprocessing techniques. We plan to incorporate max pooling and dropout layers to prevent overfitting, batch normalization to standardize input values across each batch and speed up the training process,  and additional convolutional layers to the model to enable better feature detection in the input images. Principal Component Analysis (PCA) along with the potential addition of synthetic samples will be essential to improve our model’s performance through preprocessing.
+For the final, our goal is to have an accurate model that can identify the other classes of dementedness present in the dataset. To achieve this, we will look into adding more layers to the network architecture and more advanced data preprocessing techniques. We plan to incorporate max pooling and dropout layers to prevent overfitting, batch normalization to standardize input values across each batch and speed up the training process, and additional convolutional layers to the model to enable better feature detection in the input images. Principal Component Analysis (PCA) along with the potential addition of synthetic samples will be essential to improve our model’s performance through preprocessing.
 
 ## Contribution Table:
 
