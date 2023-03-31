@@ -72,7 +72,7 @@ For the final, our goal is to have an accurate model that can identify the other
 
 ## Contribution Table:
 
-![](assets/Contribution_Table.png)
+![](assets/Contribution_Table_2.png)
 
 ## Gantt Chart
 
