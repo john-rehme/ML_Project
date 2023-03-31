@@ -62,7 +62,13 @@ The confusion matrix shows the results of the model on the test data.
 
 As mentioned earlier, this is a supervised method so we are able to assign the predicted label and true label in the confusion matrix to visualize these results.  As of now, every image is being assigned to Non-Demented leading to the 50% accuracy. This is not an ideal result from the model. We have been experimenting with different weights tensors to input into the model and different versions of data pre-processing to help the model choose other classifications. Additionally, we are investigating the addition of synthetic sampling to our dataset to generate more samples in the mildly and moderately demented datasets. 
 
-Currently our data pre-processing includes cropping each image by 10 pixels on either side reducing the image size from 208x176 to 188x156. This is helpful as every image has large black borders surrounding the actual image of the brain, alleviating pressure on the model. The image data is also normalized by dividing by 256, forcing every pixel value to be a number between [0, 1]. 
+Currently our data pre-processing includes cropping each image by 10 pixels on either side reducing the image size from 208x176 to 188x156. This is helpful as every image has large black borders surrounding the actual image of the brain, alleviating pressure on the model.
+
+![](assets/Scan_Cropped.png)
+
+Above is an image of a scan before and after it was cropped. Almost all of the relevant information was preserved, but the numebr of features has been decreased quite a bit.
+
+The image data is also normalized by dividing by 256, forcing every pixel value to be a number between [0, 1].
 
 Other important aspects of the model include using Adam as an optimizer and categorical cross entropy as the loss function. 
 
