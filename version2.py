@@ -16,7 +16,8 @@ LEARNING_RATE   = 0.01
 MAX_GRAD_NORM   = 2
 MAX_STEPS       = 5
 LOG_INTERVAL    = 1 # doesn't affect learning
-RETAINED_VARIANCE = .90
+RETAINED_VAR    = .90 # unused in current implementation of PCA
+PCA_K           = 1024
 
 # # MODEL PARAMETERS
 # DIM_EMBED       = 16
@@ -40,10 +41,8 @@ NUM_ROWS   = x_train.shape[2]
 NUM_COLS   = x_train.shape[3]
 
 ### PREPROCESS DATA
-x_train = crop(x_train, top=16, bottom=16, left=16, right=16)
-x_test = crop(x_test, top=16, bottom=16, left=16, right=16)
-# x_train = pca(x_train, RETAINED_VARIANCE)
-# x_test = pca(x_test, RETAINED_VARIANCE)
+x_train, x_test = crop(x_train, x_test, threshold=0)
+# x_train, x_test = pca(x_train, x_test, PCA_K)
 
 ### INITIALIZE MODEL
 model = Net(NUM_CHANS, NUM_CLASS)
