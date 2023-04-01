@@ -66,7 +66,7 @@ Currently our data pre-processing includes cropping each image on each edge base
 
 ![](assets/Scan_Cropped.png)
 
-Above is an image of a scan before and after it was cropped. Almost all of the relevant information was preserved, but the numeber of features has been decreased quite a bit.
+Above is an image of a scan before and after it was cropped. Almost all of the relevant information was preserved, but the number of features has been decreased quite a bit.
 
 We have also began implementing PCA into preprocessing. This should help to cut down on the noise in the images. 
 
