@@ -13,11 +13,11 @@ class Net(nn.Module): # TODO: revise architecture (add dropout, max pooling, etc
 
     def forward(self, x):
         # x shape [BATCH_SIZE, 1, 208, 176] (WITHOUT DATA PREPROCESSING)
-        y = torch.tanh(self.conv2d1(x))
-        y = torch.tanh(self.conv2d2(y))
-        y = torch.tanh(self.conv2d3(y))
+        y = nn.ReLU(self.conv2d1(x))
+        y = nn.ReLU(self.conv2d2(y))
+        y = nn.ReLU(self.conv2d3(y))
         y = y.squeeze(1).flatten(start_dim=1) # shape [2048, x]
-        y = torch.tanh(self.linear1(y))
-        y = torch.tanh(self.linear2(y))
+        y = nn.ReLU(self.linear1(y))
+        y = nn.ReLU(self.linear2(y))
         # y shape [BATCH_SIZE, NUM_CLASS]
         return y
