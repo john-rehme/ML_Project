@@ -45,7 +45,7 @@ x_train, x_test = crop(x_train, x_test, threshold=0)
 # x_train, x_test = pca(x_train, x_test, PCA_K)
 
 ### INITIALIZE MODEL
-model = Test_Net(NUM_CHANS, NUM_CLASS)
+model = ResNet(NUM_CHANS, NUM_CLASS)
 optimizer = Adam(model.parameters(), lr=LEARNING_RATE)
 
 ### INITIALIZE SAVE DIRECTORY
