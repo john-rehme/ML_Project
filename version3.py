@@ -14,7 +14,7 @@ SEED            = 0
 BATCH_SIZE      = 2048
 LEARNING_RATE   = 0.01
 MAX_GRAD_NORM   = 2
-MAX_STEPS       = 5
+MAX_STEPS       = 20
 LOG_INTERVAL    = 1 # doesn't affect learning
 RETAINED_VAR    = .90 # unused in current implementation of PCA
 PCA_K           = 1024
@@ -45,7 +45,7 @@ x_train, x_test = crop(x_train, x_test, threshold=0)
 # x_train, x_test = pca(x_train, x_test, PCA_K)
 
 ### INITIALIZE MODEL
-model = Net(NUM_CHANS, NUM_CLASS)
+model = Test_Net(NUM_CHANS, NUM_CLASS)
 optimizer = Adam(model.parameters(), lr=LEARNING_RATE)
 
 ### INITIALIZE SAVE DIRECTORY
