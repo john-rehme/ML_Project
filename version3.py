@@ -11,7 +11,7 @@ import csv
 
 # HYPERPARAMETERS
 SEED            = 0
-BATCH_SIZE      = 2048
+BATCH_SIZE      = 8192
 LEARNING_RATE   = 0.01
 MAX_GRAD_NORM   = 2
 MAX_STEPS       = 5
@@ -44,13 +44,14 @@ NUM_COLS   = x_train.shape[3]
 ### PREPROCESS DATA
 x_train, x_test = crop(x_train, x_test, threshold=0)
 # x_train, x_test = pca(x_train, x_test, PCA_K)
+# x_train, x_test = categorize(x_train, x_test)
 
 ### INITIALIZE MODEL
 model = Net(NUM_CHANS, NUM_CLASS, dropout=DROPOUT_P)
 optimizer = Adam(model.parameters(), lr=LEARNING_RATE)
 
 ### INITIALIZE SAVE DIRECTORY
-characteristics = f'version{2}'
+characteristics = f'version{3}'
 time_id         = time.strftime('%Y-%m-%d %H-%M-%S')
 save_dir        = os.path.join('results', characteristics, time_id)
 os.makedirs(save_dir)

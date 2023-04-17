@@ -1,22 +1,23 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
     
-class Net(nn.Module): # TODO: revise architecture (add dropout, max pooling, etc)
-    def __init__(self, start_dim, end_dim, bias=True, dropout = 0):
+class Net(nn.Module):
+    def __init__(self, start_dim, end_dim, bias=True, dropout_p=0):
         super(Net, self).__init__()
         self.conv2d1 = nn.Conv2d(start_dim, 16, 3, bias=bias)
         self.maxpool1 = nn.MaxPool2d(2)
-        self.dropout1 = nn.Dropout2d(p=dropout)
-        self.conv2d2 = nn.Conv2d(16, 16, 3, bias=bias)
+        self.dropout1 = nn.Dropout2d(p=dropout_p)
+        self.conv2d2 = nn.Conv2d(16, 8, 3, bias=bias)
         self.maxpool2 = nn.MaxPool2d(2)
-        self.dropout2 = nn.Dropout2d(p=dropout)
-        self.conv2d3 = nn.Conv2d(16, 1, 3, bias=bias)
+        self.dropout2 = nn.Dropout2d(p=dropout_p)
+        self.conv2d3 = nn.Conv2d(8, 1, 3, bias=bias)
         
         self.linear1 = nn.Linear(1280, 256, bias=bias)
-        self.dropout3 = nn.Dropout(p=dropout)
+        self.dropout3 = nn.Dropout(p=dropout_p)
         self.linear2 = nn.Linear(256, end_dim, bias=bias)
 
-        self.relu = nn.ReLU()
+        self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x):
         y = self.relu(self.conv2d1(x))
@@ -58,7 +59,7 @@ class BasicBlock(nn.Module):
         return out
 
 class ResNet(nn.Module):
-    def __init__(self, start_dim, end_dim, dropout_rate=0.2, bias=True):
+    def __init__(self, start_dim, end_dim, dropout_p=0, bias=True):
         super(ResNet, self).__init__()
         self.conv1 = nn.Conv2d(start_dim, 16, 3, padding=1, bias=bias)
         self.bn1 = nn.BatchNorm2d(16)
@@ -66,7 +67,7 @@ class ResNet(nn.Module):
         self.layer2 = self._make_layer(16, 32, 2, bias)
         self.layer3 = self._make_layer(32, 64, 2, bias)
         self.pool = nn.MaxPool2d(2, 2)
-        self.dropout = nn.Dropout(p=dropout_rate)
+        self.dropout = nn.Dropout(p=dropout_p)
         self.fc1 = nn.Linear(1280, 256, bias=bias)
         self.fc2 = nn.Linear(256, end_dim, bias=bias)
 
@@ -88,3 +89,29 @@ class ResNet(nn.Module):
         x = self.dropout(x)
         x = self.fc2(x)
         return x
+
+class PCANet(nn.Module):
+    def __init__(self, start_dim, end_dim, bias=True):
+        super(PCANet, self).__init__()
+        self.linear1 = nn.Linear(start_dim, 2048, bias=bias)
+        self.linear2 = nn.Linear(2048, 2048, bias=bias)
+        self.linear3 = nn.Linear(2048, 1024, bias=bias)
+        self.linear4 = nn.Linear(1024, 512, bias=bias)
+        self.linear5 = nn.Linear(512, 256, bias=bias)
+        self.linear6 = nn.Linear(256, 128, bias=bias)
+        self.linear7 = nn.Linear(128, 64, bias=bias)
+        self.linear8 = nn.Linear(64, 32, bias=bias)
+        self.linear9 = nn.Linear(32, end_dim, bias=bias)
+        self.relu = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        y = self.relu(self.linear1(x))
+        y = self.relu(self.linear2(y))
+        y = self.relu(self.linear3(y))
+        y = self.relu(self.linear4(y))
+        y = self.relu(self.linear5(y))
+        y = self.relu(self.linear6(y))
+        y = self.relu(self.linear7(y))
+        y = self.relu(self.linear8(y))
+        y = self.relu(self.linear9(y))
+        return y

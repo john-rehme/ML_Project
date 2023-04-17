@@ -3,7 +3,6 @@ import torch
 import torchvision
 import torch.nn as nn
 from torchvision.io import read_image
-# import numpy as np
 from sklearn.metrics import ConfusionMatrixDisplay
 import matplotlib
 import matplotlib.pyplot as plt
@@ -46,14 +45,6 @@ def crop(x1, x2, threshold=0):
 
     return x_crop[:x1.shape[0]], x_crop[x1.shape[0]:]
 
-# def pca_np(x, retained_var): # scrapped
-#     U, S, V = np.linalg.svd(x - x.mean(0), full_matrices=False)
-#     for k in range(1, S.size + 1):
-#         K = k
-#         if np.sum(S[:K] ** 2) / np.sum(S ** 2) > retained_var:
-#             break
-#     return (x - x.mean(0)) @ V.T[:, :K]
-
 def pca(x1, x2, K):
     print('Compressing images with PCA...')
     x = torch.cat((x1, x2))
@@ -74,6 +65,20 @@ def pca(x1, x2, K):
     # plt.show()
 
     return z_flat[:x1.shape[0]], z_flat[x1.shape[0]:]
+
+def categorize(x1, x2, dark=0.2, light=0.5):
+    x1c = torch.where(x1 < dark, 0, torch.where(x1 > light, 1, 0.5))
+    x2c = torch.where(x2 < dark, 0, torch.where(x2 > light, 1, 0.5))
+
+    # below code visualizes changes
+    _, axs = plt.subplots(1, 2, figsize=(10, 5))
+    axs[0].imshow(x1[0].squeeze(0), cmap='gray')
+    axs[0].set_title('Original Image')
+    axs[1].imshow(x1c[0].squeeze(0), cmap='gray')
+    axs[1].set_title('Categorized Image')
+    plt.show()
+
+    return x1c, x2c
     
 def calc_loss(logits, y):
     loss_func = nn.CrossEntropyLoss(weight=torch.tensor([2, 2.86, 7.14, 98.48]), reduction='none') # TODO: look into weights parameter
