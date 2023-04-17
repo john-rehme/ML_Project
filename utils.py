@@ -73,7 +73,7 @@ def pca(x1, x2, K):
     # axs[1].set_title(f'PCA Image: k = {K}')
     # plt.show()
 
-    return z_flat[:x1.shape[0]], x_flat[x1.shape[0]:]
+    return z_flat[:x1.shape[0]], z_flat[x1.shape[0]:]
     
 def calc_loss(logits, y):
     loss_func = nn.CrossEntropyLoss(weight=torch.tensor([2, 2.86, 7.14, 98.48]), reduction='none') # TODO: look into weights parameter

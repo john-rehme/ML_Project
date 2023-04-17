@@ -18,6 +18,7 @@ MAX_STEPS       = 5
 LOG_INTERVAL    = 1 # doesn't affect learning
 RETAINED_VAR    = .90 # unused in current implementation of PCA
 PCA_K           = 1024
+DROPOUT_P       = .25
 
 # # MODEL PARAMETERS
 # DIM_EMBED       = 16
@@ -45,7 +46,7 @@ x_train, x_test = crop(x_train, x_test, threshold=0)
 # x_train, x_test = pca(x_train, x_test, PCA_K)
 
 ### INITIALIZE MODEL
-model = Net(NUM_CHANS, NUM_CLASS)
+model = Net(NUM_CHANS, NUM_CLASS, dropout=DROPOUT_P)
 optimizer = Adam(model.parameters(), lr=LEARNING_RATE)
 
 ### INITIALIZE SAVE DIRECTORY
