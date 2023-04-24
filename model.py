@@ -115,3 +115,31 @@ class PCANet(nn.Module):
         y = self.relu(self.linear8(y))
         y = self.relu(self.linear9(y))
         return y
+    
+class ResNetLite(nn.Module):
+    def __init__(self, start_dim, end_dim, dropout_p=0, bias=True):
+        super(ResNetLite, self).__init__()
+        self.conv1 = nn.Conv2d(start_dim, 16, 3, padding=1, bias=bias)
+        self.bn1 = nn.BatchNorm2d(16)
+        self.bb1 = BasicBlock(16, 32, 2, bias)
+        self.bb2 = BasicBlock(32, 32, 1, bias)
+        self.bb3 = BasicBlock(32, 64, 1, bias)
+        self.pool = nn.MaxPool2d(2)
+        self.dropout = nn.Dropout(p=dropout_p)
+        self.fc1 = nn.Linear(1280, 256, bias=bias)
+        self.fc2 = nn.Linear(256, end_dim, bias=bias)
+
+    def forward(self, x):
+        x = self.pool(F.relu(self.bn1(self.conv1(x))))
+        x = self.bb1(x)
+        x = self.pool(x)
+        x = self.bb2(x)
+        x = self.pool(x)
+        x = self.bb3(x)
+        x = self.pool(x)
+        x = x.flatten(start_dim=1)
+        x = self.dropout(x)
+        x = F.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = self.fc2(x)
+        return x
