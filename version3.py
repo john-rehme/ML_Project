@@ -11,13 +11,14 @@ import csv
 
 # HYPERPARAMETERS
 SEED            = 0
-BATCH_SIZE      = 2048
+BATCH_SIZE      = 1024 # changed from 2048
 LEARNING_RATE   = 0.01
 MAX_GRAD_NORM   = 2
 MAX_STEPS       = 50
 LOG_INTERVAL    = 1 # doesn't affect learning
 RETAINED_VAR    = .90 # unused in current implementation of PCA
 PCA_K           = 1024
+WEIGHT_DECAY    = 0.001 # regularization parameter
 
 # # MODEL PARAMETERS
 # DIM_EMBED       = 16
@@ -45,11 +46,11 @@ x_train, x_test = crop(x_train, x_test, threshold=0)
 # x_train, x_test = pca(x_train, x_test, PCA_K)
 
 ### INITIALIZE MODEL
-model = ResNet(NUM_CHANS, NUM_CLASS)
-optimizer = Adam(model.parameters(), lr=LEARNING_RATE)
+model = AlexNet(NUM_CLASS)
+optimizer = Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
 
 ### INITIALIZE SAVE DIRECTORY
-characteristics = f'version{2}'
+characteristics = f'version{3}'
 time_id         = time.strftime('%Y-%m-%d %H-%M-%S')
 save_dir        = os.path.join('results', characteristics, time_id)
 os.makedirs(save_dir)
@@ -72,8 +73,13 @@ with open(log_path, 'w', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(header)
 
+### PREP FOR VISUALIZATION
+highest_acc = 0
+best_cm_args = ()
+
 ### TRAIN MODEL
 print('Training...')
+target_weights = 1.0 / torch.bincount(y_train)
 start_time = time.time()
 for epoch in range(1, MAX_STEPS + 1):
     model.train(True)
@@ -129,6 +135,12 @@ for epoch in range(1, MAX_STEPS + 1):
             loss_test = calc_loss(logits, y_test)
             accuracy_test = calc_accuracy(logits, y_test)
             cm = calc_cm(logits, y_test)
+
+            # Track best accuracy for CM
+            acc_num = (accuracy_train.sum() / TRAIN_SIZE).item()
+            if acc_num > highest_acc:
+                highest_acc = acc_num
+                best_cm_args = (logits, y_test)
             
         ### LOG TEST LOSS AND ACCURACY
         print(f'Mean_test_loss:\t\t{loss_test.mean().item()}')
@@ -141,3 +153,6 @@ for epoch in range(1, MAX_STEPS + 1):
         with open(log_path, 'a', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(row)
+
+print(f'\nTotal training time: {time.strftime("%H:%M:%S", time.gmtime(end_time))}')
+final_visualize(log_path, best_cm_args)

@@ -3,10 +3,11 @@ import torch
 import torchvision
 import torch.nn as nn
 from torchvision.io import read_image
-# import numpy as np
-from sklearn.metrics import ConfusionMatrixDisplay
+import numpy as np
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import matplotlib
 import matplotlib.pyplot as plt
+import csv
 
 def read_data(data_path):
     label_to_int = {'NonDemented': 0, 'VeryMildDemented': 1, 'MildDemented': 2, 'ModerateDemented': 3}
@@ -100,3 +101,63 @@ def cm_visualize(cm):
     print('\nActual\Predicted\t' + '\t'.join(lbls))
     for i, label in enumerate(labels):
         print('{}\t{}'.format(label, '\t'.join(str(cm[i, j].item()) for j in range(len(labels)))))
+
+def calc_confusion_matrix(logits, y_true):
+    y_pred = torch.argmax(logits, 1)
+    cm = confusion_matrix(y_true, y_pred)
+    return cm
+
+def final_visualize(log_path, cm_args):
+    logits = cm_args[0]
+    y_true = cm_args[1]
+    steps = []
+    test_acc = []
+    train_acc = []
+    test_loss = []
+    train_loss = []
+    with open(log_path, 'r') as csv_file:
+        reader = csv.reader(csv_file)
+
+        i = 0
+        for row in reader:
+            if i > 0:
+                steps.append(int(row[0]))
+                train_loss.append(float(row[1]))
+                train_acc.append(float(row[2]))
+                test_loss.append(float(row[3]))
+                test_acc.append(float(row[4]))
+            else:
+                i = 1
+
+    # Loss Line Plot
+    np_test_loss = np.array(test_loss)
+    np_train_loss = np.array(train_loss)
+
+    plt.plot(np_test_loss, color = 'b', label="Test Loss")
+    plt.plot(np_train_loss, color = 'r', label="Train Loss")
+    plt.title("Average Loss Per Step")
+    plt.xlabel("Step")
+    plt.xticks(np.arange(len(steps)), ["" if (i+1)%5!=0 else str(i+1) for i in range(len(steps))])
+    plt.ylabel("Average Loss")
+    plt.legend()
+    plt.show()
+
+    # Accuracy Line Plot
+    np_test_acc = np.array(test_acc)
+    np_train_acc = np.array(train_acc)
+
+    plt.plot(np_test_acc, color = 'b', label="Test Accuracy")
+    plt.plot(np_train_acc, color = 'r', label="Train Accuracy")
+    plt.title("Average Accuracy Per Step")
+    plt.xlabel("Step")
+    plt.xticks(np.arange(len(steps)), ["" if (i+1)%5!=0 else str(i+1) for i in range(len(steps))])
+    plt.ylabel("Average Accuracy")
+    plt.legend()
+    plt.show()
+
+    # Confusion Matrix based on highest accuracy step
+    lbls = ['NonD', 'VMildD', 'MildD', 'ModD']
+    # labels = [str(i) for i in range(len(lbls))] # convert numerical labels to strings
+    y_pred = torch.argmax(logits, 1)
+    cm = confusion_matrix(y_true, y_pred)
+    ConfusionMatrixDisplay(cm, display_labels=lbls).plot()
