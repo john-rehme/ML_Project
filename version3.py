@@ -11,18 +11,15 @@ import csv
 
 # HYPERPARAMETERS
 SEED            = 0
-BATCH_SIZE      = 8192
+BATCH_SIZE      = 2048
 LEARNING_RATE   = 0.01
+WEIGHT_DECAY    = 0.001
 MAX_GRAD_NORM   = 2
-MAX_STEPS       = 5
+MAX_STEPS       = 50
 LOG_INTERVAL    = 1 # doesn't affect learning
 RETAINED_VAR    = .90 # unused in current implementation of PCA
 PCA_K           = 1024
 DROPOUT_P       = .25
-
-# # MODEL PARAMETERS
-# DIM_EMBED       = 16
-# KERNEL_SIZE     = 3
 
 # LOAD CHECKPOINT INFORMATION
 CP_TIME         = ''
@@ -47,8 +44,8 @@ x_train, x_test = crop(x_train, x_test, threshold=0)
 # x_train, x_test = categorize(x_train, x_test)
 
 ### INITIALIZE MODEL
-model = Net(NUM_CHANS, NUM_CLASS, dropout=DROPOUT_P)
-optimizer = Adam(model.parameters(), lr=LEARNING_RATE)
+model = ResNetLite(NUM_CHANS, NUM_CLASS, dropout_p=DROPOUT_P)
+optimizer = Adam(model.parameters(), lr=LEARNING_RATE) #, weight_decay=WEIGHT_DECAY)
 
 ### INITIALIZE SAVE DIRECTORY
 characteristics = f'version{3}'
@@ -73,6 +70,10 @@ with open(log_path, 'w', newline='') as f:
     header = ['Step', 'Mean_train_loss', 'Train_accuracy', 'Mean_test_loss', 'Test_accuracy']
     writer = csv.writer(f)
     writer.writerow(header)
+
+### Prep for visualization
+best_acc = 0
+best_cm = None
 
 ### TRAIN MODEL
 print('Training...')
@@ -131,15 +132,26 @@ for epoch in range(1, MAX_STEPS + 1):
             loss_test = calc_loss(logits, y_test)
             accuracy_test = calc_accuracy(logits, y_test)
             cm = calc_cm(logits, y_test)
+
+            # Track best accuracy for CM
+            acc_num = accuracy_test.sum().item()
+            if acc_num > best_acc:
+                best_acc = acc_num
+                best_cm = cm
             
         ### LOG TEST LOSS AND ACCURACY
         print(f'Mean_test_loss:\t\t{loss_test.mean().item()}')
         print(f'Test_accuracy:\t\t{(accuracy_test.sum() / TEST_SIZE).item()}')
         row.append(loss_test.mean().item())
         row.append((accuracy_test.sum() / TEST_SIZE).item())
+        row.append()
         cm_visualize(cm)
         
         ### LOG
         with open(log_path, 'a', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(row)
+
+print(f'\nTotal training time: {time.strftime("%H:%M:%S", time.gmtime(end_time))}')
+line_graph(log_path)
+cm_visualize(best_cm)
