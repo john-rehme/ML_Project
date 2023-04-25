@@ -5,7 +5,6 @@ import torch.nn as nn
 from torchvision.io import read_image
 import numpy as np
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-import matplotlib
 import matplotlib.pyplot as plt
 import csv
 
@@ -106,8 +105,8 @@ def cm_visualize(cm):
     print('\nActual\Predicted\t' + '\t'.join(lbls))
     for i, label in enumerate(labels):
         print('{}\t{}'.format(label, '\t'.join(str(cm[i, j].item()) for j in range(len(labels)))))
-    # matplotlib.use('Agg')
     ConfusionMatrixDisplay(cm, display_labels=lbls).plot()
+    plt.show()
 
 def line_graph(log_path):
     steps = []

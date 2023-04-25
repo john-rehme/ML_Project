@@ -15,7 +15,7 @@ BATCH_SIZE      = 2048
 LEARNING_RATE   = 0.01
 WEIGHT_DECAY    = 0.001
 MAX_GRAD_NORM   = 2
-MAX_STEPS       = 50
+MAX_STEPS       = 2
 LOG_INTERVAL    = 1 # doesn't affect learning
 RETAINED_VAR    = .90 # unused in current implementation of PCA
 PCA_K           = 1024
@@ -48,13 +48,13 @@ model = ResNetLite(NUM_CHANS, NUM_CLASS, dropout_p=DROPOUT_P)
 optimizer = Adam(model.parameters(), lr=LEARNING_RATE) #, weight_decay=WEIGHT_DECAY)
 
 ### INITIALIZE SAVE DIRECTORY
-characteristics = f'version{3}'
+characteristics = f'ResNetLite'
 time_id         = time.strftime('%Y-%m-%d %H-%M-%S')
 save_dir        = os.path.join('results', characteristics, time_id)
 os.makedirs(save_dir)
 
 ### LOAD CHECKPOINT
-cp_path = os.path.join(characteristics, CP_TIME, f'{CP_STEP}.pt')
+cp_path = os.path.join('results', characteristics, CP_TIME, f'{CP_STEP}.pt')
 if os.path.isfile(cp_path):
     print('Loading checkpoint...\n')
     checkpoint = torch.load(cp_path)
@@ -144,8 +144,7 @@ for epoch in range(1, MAX_STEPS + 1):
         print(f'Test_accuracy:\t\t{(accuracy_test.sum() / TEST_SIZE).item()}')
         row.append(loss_test.mean().item())
         row.append((accuracy_test.sum() / TEST_SIZE).item())
-        row.append()
-        cm_visualize(cm)
+        # cm_visualize(cm)
         
         ### LOG
         with open(log_path, 'a', newline='') as f:
