@@ -93,9 +93,9 @@ def calc_accuracy(logits, y):
 
 def calc_cm(logits, y):
     y_hat = torch.argmax(logits, 1)
-    cm = torch.zeros((logits.shape[1], logits.shape[1]), dtype=int)
-    for i, j in zip(y, y_hat):
-        cm[i, j] += 1
+    # cm = torch.zeros((logits.shape[1], logits.shape[1]), dtype=int)
+    # for i, j in zip(y, y_hat):
+    #     cm[i, j] += 1
     cm = confusion_matrix(y, y_hat)
     return cm
 

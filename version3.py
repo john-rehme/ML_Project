@@ -15,7 +15,7 @@ BATCH_SIZE      = 2048
 LEARNING_RATE   = 0.01
 WEIGHT_DECAY    = 0.001
 MAX_GRAD_NORM   = 2
-MAX_STEPS       = 2
+MAX_STEPS       = 50
 LOG_INTERVAL    = 1 # doesn't affect learning
 RETAINED_VAR    = .90 # unused in current implementation of PCA
 PCA_K           = 1024
@@ -44,7 +44,8 @@ x_train, x_test = crop(x_train, x_test, threshold=0)
 # x_train, x_test = categorize(x_train, x_test)
 
 ### INITIALIZE MODEL
-model = ResNetLite(NUM_CHANS, NUM_CLASS, dropout_p=DROPOUT_P)
+model = ResNetLite(NUM_CHANS, NUM_CLASS, DROPOUT_P)
+# model = PCANet(PCA_K, NUM_CLASS)
 optimizer = Adam(model.parameters(), lr=LEARNING_RATE) #, weight_decay=WEIGHT_DECAY)
 
 ### INITIALIZE SAVE DIRECTORY
