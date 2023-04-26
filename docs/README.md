@@ -1,4 +1,4 @@
-# ML Midterm Report
+# ML Final Report
 ## Introduction/Background:
 Alzheimer’s disease (“AD”) is an increasingly prevalent condition in aging adults characterized by a debilitating cognitive decline, most notably in memory function (“dementia”). Although AD is mostly seen in adults ages 70+, early onset dementia is known to occur in younger adults (Scheltens, et al., 2021). Pathogenesis of the disease has been associated with an accumulation of β-amyloid (“Aβ”) peptides into masses known as “amyloid plaques” that form in the brain. These plaques, visible on MRI scans, are the main diagnostic criteria for AD (Gouras, Olsson, & Hansson, 2014). The degree to which these plaques have spread and are visible on the scans is directly correlated to the degree of dementia experienced by an AD patient (Cummings & Cotman, 1995). Therefore, an automated tool to assess not only the presence of AD and/or dementia but also its degree would help speed up and further calibrate the diagnostic process. This would facilitate more accurate diagnoses and provide more time for patients and their loved ones to determine a course of action and intervention plan.
 
@@ -6,18 +6,7 @@ Alzheimer’s disease (“AD”) is an increasingly prevalent condition in aging
 ## Problem:
 In this project, we want to design a highly accurate model that can look at a .jpg of an MRI scan and classify whether the patient’s brain is non-demented, very mildly demented, mildly demented, or moderately demented. 
 
-## Methods:
-To analyze the images we will mostly be utilizing convolutional neural networks in pytorch. Though CNNs will be the base of our model, depending on the necessary complexity, more features will be added. ResNets, or residual networks, are highly applicable to image classification as it was used to win the 2015 ImageNet competition (He, et al., 2016). From ResNets, we may pull the idea of skip connections to use in our model (Oyedotun, et al., 2021). Attention mechanisms may also be useful in our model to be able to specify which parts of the image are referenced for the final classification decision (Vaswani, et al, 2017). However, we believe using Grad-CAM, will provide the output we want with simpler implementatio (Selvaraju, et al, 2017).
 
-Our current method for the midterm report involves a five-step forward feature selection. The network consists of three convolutional layers followed by two fully connected layers. The features are flattened to 1D after the third convolutional layer.
-
-![](assets/NetworkArch.JPG)
-
-Yellow = Convolutional Layer
-
-Purple = Fully Connected Layer
-
-The script sets hyperparameters and initializes the model and optimizer. If a checkpoint file exists, it loads the model and optimizer state from the file. It then sets up a log writer to write the results of each epoch to a CSV file. The model is trained for a specified number of epochs, where each epoch shuffles the training data and loops through batches of the data to perform forward and backward passes to optimize the model weights. During each batch, the loss and accuracy are calculated, and the values are appended to lists for the current epoch. After all batches are processed, the mean loss and accuracy for the epoch are calculated and written to the log writer.
 
 ## Dataset and Data Collection
 
@@ -31,64 +20,81 @@ We did not need to clean the dataset; this had already been done by OASIS.
 
 ![](assets/Class_Visualization.png)
 
-## References:
+## Methods:
 
-[Image Processing](https://ieeexplore.ieee.org/document/8320684)
+To analyze the images we will be utilizing convolutional neural networks in pytorch. Though CNNs will be the base of our model, depending on the necessary complexity, more features will be added. ResNets, or residual networks, are highly applicable to image classification as it was used to win the 2015 ImageNet competition (He, et al., 2016). From ResNets, we focus on the idea of skip connections to use in our model (Oyedotun, et al., 2021).
 
-[Attention Intro](https://blog.paperspace.com/image-classification-with-attention/)
+We created three preprocessing functions that simplified the images in some way to decrease the information load into the neural network. These were cropping, PCA, and categorizing. The cropping function cuts out most of the black space in the margins of the images. It checks over the average light level over a border row or column and removes it if it is under a certain threshold brightness level. For our implementation, light threshold 0 was used. PCA extracts the most variable features from the image. This has a downside of flattening the image. The categorizing function splits the pixels into three categories, off, half on, and on.
 
-[Melanoma with Visual Attention](https://www2.cs.sfu.ca/~hamarneh/ecopy/ipmi2019.pdf) 
+The script sets hyperparameters and initializes the model and optimizer. If a checkpoint file exists, it loads the model and optimizer state from the file. It then sets up a log writer to write the results of each epoch to a CSV file. The model is trained for a specified number of epochs, where each epoch shuffles the training data and loops through batches of the data to perform forward and backward passes to optimize the model weights. During each batch, the loss and accuracy are calculated, and the values are appended to lists for the current epoch. After all batches are processed, the mean loss and accuracy for the epoch are calculated and written to the log writer. 
 
+ResNet
 
-## Results and Discussion
+ResNet is a Deep Convolutional Neural Network (DCNN), which means that it has a large number of convolutional layers used to categorize images. It uses “skip connections”, which are an attempt to prevent overfitting and solve the vanishing gradient problem. Our architecture starts with an initial pass through a convolutional layer with batch normalization, ReLU activation, and max pooling. This is followed by passing the data through 3 layers, each consisting of 2 blocks of 2 to 3 convolutions each. This is followed by flattening and applying a dropout, which will prevent overfitting. Finally, the data is passed through 2 fully connected linear layers to produce an output.
 
-Our results are listed below after running the model.
+![](assets/ResNetBasicBlock.jpg)
 
-![](assets/Accuracy_Loss_Table.png)
+![](assets/ResNet.jpg)
 
-The table shows the mean train loss, train accuracy, mean test loss, and test accuracy for each step. Overall, it appears that the model improved significantly in terms of test accuracy over the course of the training process. The decrease in mean train loss and mean test loss suggests that the model is learning and improving over time.
+AlexNet
 
-The confusion matrix shows the results of the model on the test data.
+Our AlexNet implementation consists of five convolutional layers which are then flattened and passed through three fully connected layers. The first, second, and fifth convolutional layers are followed by a MaxPool. ReLU activation is used after each convolutional and fully connected layer except for the last fully connected layer, which is followed by a SoftMax activation. Dropout is used after the first fully connected layer to prevent overfitting. Finally, we use the cross-entropy loss function to calculate the loss and the Adam optimizer to implement weight decay. The model was trained with a batch size of 2048 and 50 epochs.
 
-![](assets/Confusion_Matrix.png)
+![](assets/AlexNet.jpg)
 
-0 = Non-Demented
+ResNetLite
 
-1 = Very Mildly Demented
+ResNetLite is a highly simplified version of ResNet above. It features the same initial pass through a convolutional layer with batch normalization, ReLU activation, and max pooling. Following that, there are only 3 blocks, of 2 to 3 convolutions each, depending on if downsampling is necessary. This is the same block as that for ResNet. This is followed by flattening, dropout, and 2 fully connected linear layers to bring the size down to 4. This network features more maxpool layers than ResNet to speed up the reduction of features.
 
-2 = Mildly Demented
+![](assets/ResNetLite.jpg)
 
-3 = Moderately Demented
+PCANet
 
-As mentioned earlier, this is a supervised method so we are able to assign the predicted label and true label in the confusion matrix to visualize these results. As of now, the model is predicting each image as Non-Demented leading to the 50% accuracy. This is not an ideal result from the model. We have been experimenting with different weights in the cross entropy loss criterion and different versions of data pre-processing to help the model diversify its classifications. Additionally, we are investigating the addition of synthetic sampling to our dataset to generate more samples in the mildly and moderately demented datasets. 
+PCANet preprocesses each image, extracting the axes with the greatest variability. This process flattens the image. In extracting the important features of the image and greatly reducing its feature size, it loses the 2D properties of the image. The 1D tensor is passed through 9 Linear layers, first increasing the size to 2048, and slowly decreasing to 4, the number of categories.
 
-Currently our data pre-processing includes cropping each image on each edge based on average brightness levels across all images. This is helpful as every image has large black borders surrounding the actual image of the brain, alleviating pressure on the model. Below shows two instances of cropping based on different brightness thresholds. The first is a more relaxed cropping that keeps any row or coumn with an average brightness over 0. The second is harsher, with its threshold at 0.1.
+![](assets/PCANet.jpg)
 
-![](assets/Scan_Cropped.png)
+## Results
 
-Above is an image of a scan before and after it was cropped. Almost all of the relevant information was preserved, but the number of features has been decreased quite a bit.
+Currently our data pre-processing includes cropping each image by 10 pixels on either side reducing the image size from 208x176 to 176x144. This is helpful as every image has large black borders surrounding the actual image of the brain, alleviating pressure on the model. The image data is also normalized by dividing by 256, forcing every pixel value to be a number between [0, 1]. 
 
-We have also began implementing PCA into preprocessing. This should help to cut down on the noise in the images. 
+Other important aspects of the model include using Adam as an optimizer and categorical cross entropy as the loss function. 
 
-![](assets/Scan_PCA.png)
+ResNet
 
-Above is an image of a original scan and the reprojected scan after PCA. It can be seen that the relative brightness of sections in the scan are maintained. PCA with k=2048 retained 99.998% of the variance, while k=1024 retained 99.4369%. An issue with PCA, however, is that since the image if flattened, its 2D nature is lost. The effects of this will require more testing.
+ResNet reached its highest accuracy of 62.3 at step 48. This model took 50 minutes to run. This model is modified and improved in ResNetLite.
 
-The image data is also normalized by dividing by 256, forcing every pixel value to be a number between [0, 1].
+![](assets/ResNetStats.jpg)
 
-Other important aspects of the model include using Adam as an optimizer and weighted categorical cross entropy as the loss function. The weights of the loss function are important as the data is heavily unbalanced.
+AlexNet
 
-## Next Steps:
+AlexNet peaked at 56.6% accuracy after 1 hour and 20 minutes of training. The losses, however, began to diverge at Step 12. This indicates that the model began overfitting. Overall, AlexNet performed well with a simpler architecture than ResNet but could not match the speed or accuracy.
 
-For the final, our goal is to have an accurate model that can identify the other classes of dementedness present in the dataset. To achieve this, we will look into adding more layers to the network architecture and more advanced data preprocessing techniques. We plan to incorporate max pooling and dropout layers to prevent overfitting, batch normalization to standardize input values across each batch and speed up the training process, and additional convolutional layers to the model to enable better feature detection in the input images. Principal Component Analysis (PCA) along with the potential addition of synthetic samples will be essential to improve our model’s performance through preprocessing.
+![](assets/AlexNetStats.jpg)
+
+ResNetLite
+
+This model’s best accuracy was 67.47% and occurred at step 40. Overall, this model took 66 minutes and 50 seconds to run. 
+
+![](assets/ResNetLiteStats.jpg)
+
+PCANet
+
+This model took just over 1 minute to run, but never “learned” anything. As shown, every test image was assigned to the “Non-Demented” category, giving an overall accuracy of 50%.
+
+![](assets/PCANetStats.jpg)
+
+## Discussion:
+
+After many iterations of the models and fine tuning hyperparameters, ResNetLite produced the best model to predict the severity of Alzheimer’s in a patient. Although it took 16 more minutes to run than ResNet, ResNetLite peaked at an accuracy of 67.47%. This was a 5.17% improvement on ResNet, a 10.87% improvement on AlexNet, and a 17.47% improvement on PCANet.
+
+The team’s main problem was the lack of diversity in the testing dataset, as many of our models incorrectly placed a lot of the test dataset into the Non-Demented category. This is likely due to Non-Demented scans comprising half of the dataset, leaving the other half to be disproportionately composed of the 3 demented categories. The more severe the Alzheimer’s category, the less it was represented within the dataset. The team tried to work around this by implementing many different structures of models and utilizing the weight parameters in many models. Oftentimes, this resulted in overfitting on the train dataset, which is demonstrated by a divergence in train and test losses in the loss graphs. The train loss would sharply decrease, while the test loss remained volatile throughout the 50 steps.
+
+Overall, we consider a 67.47% test accuracy a success. Although the model is not accurate enough for immediate clinical application, which would require a significantly higher accuracy (likely around 95%), it is a promising foundation for a computer-assisted Alzheimer’s diagnostic tool. Future improvements to the model would include gathering more data on patients with varying degrees of dementia, adding a fifth class for patients who are severely demented, and continuing to fine-tune the model to optimize accuracy and efficiency.
 
 ## Contribution Table:
 
-![](assets/Contribution_Table_2.png)
-
-## Gantt Chart
-
-![](assets/Gantt_Chart.png)
+![](assets/ContributionTableFinal.jpg)
 
 ## Works Cited
 
