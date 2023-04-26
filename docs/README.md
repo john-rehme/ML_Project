@@ -32,27 +32,27 @@ ResNet
 
 ResNet is a Deep Convolutional Neural Network (DCNN), which means that it has a large number of convolutional layers used to categorize images. It uses “skip connections”, which are an attempt to prevent overfitting and solve the vanishing gradient problem. Our architecture starts with an initial pass through a convolutional layer with batch normalization, ReLU activation, and max pooling. This is followed by passing the data through 3 layers, each consisting of 2 blocks of 2 to 3 convolutions each. This is followed by flattening and applying a dropout, which will prevent overfitting. Finally, the data is passed through 2 fully connected linear layers to produce an output.
 
-![](assets/ResNetBasicBlock.jpg)
+![](assets/ResNetBasicBlock.JPG)
 
-![](assets/ResNet.jpg)
+![](assets/ResNet.JPG)
 
 AlexNet
 
 Our AlexNet implementation consists of five convolutional layers which are then flattened and passed through three fully connected layers. The first, second, and fifth convolutional layers are followed by a MaxPool. ReLU activation is used after each convolutional and fully connected layer except for the last fully connected layer, which is followed by a SoftMax activation. Dropout is used after the first fully connected layer to prevent overfitting. Finally, we use the cross-entropy loss function to calculate the loss and the Adam optimizer to implement weight decay. The model was trained with a batch size of 2048 and 50 epochs.
 
-![](assets/AlexNet.jpg)
+![](assets/AlexNet.JPG)
 
 ResNetLite
 
 ResNetLite is a highly simplified version of ResNet above. It features the same initial pass through a convolutional layer with batch normalization, ReLU activation, and max pooling. Following that, there are only 3 blocks, of 2 to 3 convolutions each, depending on if downsampling is necessary. This is the same block as that for ResNet. This is followed by flattening, dropout, and 2 fully connected linear layers to bring the size down to 4. This network features more maxpool layers than ResNet to speed up the reduction of features.
 
-![](assets/ResNetLite.jpg)
+![](assets/ResNetLite.JPG)
 
 PCANet
 
 PCANet preprocesses each image, extracting the axes with the greatest variability. This process flattens the image. In extracting the important features of the image and greatly reducing its feature size, it loses the 2D properties of the image. The 1D tensor is passed through 9 Linear layers, first increasing the size to 2048, and slowly decreasing to 4, the number of categories.
 
-![](assets/PCANet.jpg)
+![](assets/PCANet.JPG)
 
 ## Results
 
